@@ -27,7 +27,7 @@
         "zing/coding-standard": "^4.0"
     },
     "conflict": {
-        "phpunit/phpunit": ">=8.5.12"
+        "phpunit/phpunit": "^8.5.12"
     },
     "autoload": {
         "psr-4": {
