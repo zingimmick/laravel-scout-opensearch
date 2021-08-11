@@ -275,9 +275,9 @@ class OpenSearchEngine extends Engine
      *
      * @return mixed
      */
-    public function createIndex($name, array $options = []): void
+    public function createIndex($name, array $options = [])
     {
-        $this->app->save($name);
+        return $this->app->save($name);
     }
 
     /**
@@ -287,9 +287,9 @@ class OpenSearchEngine extends Engine
      *
      * @return mixed
      */
-    public function deleteIndex($name): void
+    public function deleteIndex($name)
     {
-        $this->app->removeById($name);
+        return $this->app->removeById($name);
     }
 
     /**
