@@ -6,6 +6,7 @@ use PhpCsFixer\Fixer\ControlStructure\YodaStyleFixer;
 use PhpCsFixer\Fixer\Phpdoc\NoSuperfluousPhpdocTagsFixer;
 use PhpCsFixer\Fixer\PhpUnit\PhpUnitInternalClassFixer;
 use PhpCsFixer\Fixer\PhpUnit\PhpUnitTestClassRequiresCoversFixer;
+use PhpCsFixer\Fixer\Strict\StrictParamFixer;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symplify\EasyCodingStandard\ValueObject\Option;
 use Zing\CodingStandard\Set\ECSSetList;
@@ -21,6 +22,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         PhpUnitInternalClassFixer::class,
         PhpUnitTestClassRequiresCoversFixer::class,
         NoSuperfluousPhpdocTagsFixer::class,
+        StrictParamFixer::class => [__DIR__ . '/src/Engines/OpenSearchEngine.php'],
     ]);
     $parameters->set(
         Option::PATHS,
