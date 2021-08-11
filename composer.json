@@ -63,7 +63,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Zing\\LaravelScout\\OpenSearch\\OpensearchServiceProvider"
+                "Zing\\LaravelScout\\OpenSearch\\OpenSearchServiceProvider"
             ]
         }
     },
