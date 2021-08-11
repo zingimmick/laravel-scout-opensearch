@@ -17,11 +17,17 @@ class SearchableModel extends Model
 
     use Searchable;
 
+    /**
+     * @return string
+     */
     public function searchableAs()
     {
         return 'app.table';
     }
 
+    /**
+     * @return array
+     */
     public function toSearchableArray()
     {
         return [

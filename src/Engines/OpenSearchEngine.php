@@ -62,7 +62,7 @@ class OpenSearchEngine extends Engine
         $this->app = new AppClient($opensearch);
     }
 
-    public function update($models)
+    public function update($models): void
     {
         if ($models->isEmpty()) {
             return;
@@ -98,12 +98,10 @@ class OpenSearchEngine extends Engine
 
                 throw new \Exception($message ?: 'errors not return');
             }
-
-            return $searchResult['result'];
         }
     }
 
-    public function delete($models)
+    public function delete($models): void
     {
         if ($models->isEmpty()) {
             return;
@@ -126,8 +124,6 @@ class OpenSearchEngine extends Engine
 
             throw new \Exception($message ?: 'errors not return');
         }
-
-        return $searchResult['result'];
     }
 
     public function search(Builder $builder)
@@ -152,6 +148,14 @@ class OpenSearchEngine extends Engine
         ]));
     }
 
+    /**
+     * @param \Laravel\Scout\Builder $builder
+     * @param array $options
+     *
+     * @throws \Exception
+     *
+     * @return mixed
+     */
     protected function performSearch(Builder $builder, array $options = [])
     {
         if ($builder->callback !== null) {

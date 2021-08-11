@@ -19,8 +19,14 @@ class OpenSearchEngineTest extends TestCase
 {
     use DatabaseTransactions;
 
+    /**
+     * @var \Mockery\MockInterface&\OpenSearch\Client\OpenSearchClient
+     */
     protected $client;
 
+    /**
+     * @var \Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine
+     */
     protected $engine;
 
     protected function setUp(): void
