@@ -249,7 +249,7 @@ class OpenSearchEngine extends Engine
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
             ->filter(function ($model) use ($objectIds) {
-                return in_array($model->getScoutKey(), $objectIds, true);
+                return in_array($model->getScoutKey(), $objectIds);
             })->sortBy(function ($model) use ($objectIdPositions) {
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();

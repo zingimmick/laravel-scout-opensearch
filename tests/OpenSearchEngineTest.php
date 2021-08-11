@@ -437,7 +437,7 @@ class OpenSearchEngineTest extends TestCase
         "items": [
             {
                 "fields": {
-                    "id": {$model->getKey()},
+                    "id": "{$model->getKey()}",
                     "name": "我是一条新<em>文档</em>的标题",
                     "phone": "18312345678",
                     "index_name": "app_schema_demo"
