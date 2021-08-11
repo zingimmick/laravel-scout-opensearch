@@ -9,7 +9,6 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Scout\Builder;
 use Laravel\Scout\EngineManager;
 use Mockery;
-use Nette\Utils\Json;
 use OpenSearch\Client\OpenSearchClient;
 use OpenSearch\Client\SearchClient;
 use OpenSearch\Generated\Common\OpenSearchResult;
@@ -523,7 +522,7 @@ CODE_SAMPLE;
 
             'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
         ];
-        $result = Json::encode($jsonData);
+        $result = json_encode($jsonData);
 
         $this->client->shouldReceive('get')
             ->times(1)
@@ -583,7 +582,7 @@ CODE_SAMPLE;
 
             'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
         ];
-        $result = Json::encode($jsonData);
+        $result = json_encode($jsonData);
 
         $this->client->shouldReceive('get')
             ->times(1)
