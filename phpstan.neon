@@ -1,0 +1,13 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    level: max
+    paths:
+        - config
+        - src
+        - tests
+    checkMissingIterableValueType: false
+    ignoreErrors:
+        - '#Class Skeleton not found.#'
+        - '#Parameter \#1 \$(.*?) of function forward_static_call expects callable\(\): mixed#'
