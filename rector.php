@@ -17,7 +17,6 @@ use Rector\Privatization\Rector\Class_\ChangeReadOnlyVariableWithDefaultValueToC
 use Rector\Privatization\Rector\Class_\FinalizeClassesWithoutChildrenRector;
 use Rector\Privatization\Rector\Class_\RepeatedLiteralToClassConstantRector;
 use Rector\Privatization\Rector\MethodCall\PrivatizeLocalGetterToPropertyRector;
-use Rector\Privatization\Rector\Property\PrivatizeLocalPropertyToPrivatePropertyRector;
 use Rector\Set\ValueObject\SetList;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Zing\CodingStandard\Set\RectorSetList;
@@ -46,11 +45,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             FinalizeClassesWithoutChildrenRector::class,
             RepeatedLiteralToClassConstantRector::class,
             PrivatizeLocalGetterToPropertyRector::class,
-            PrivatizeLocalPropertyToPrivatePropertyRector::class,
         ]
     );
     $parameters->set(
         Option::PATHS,
-        [__DIR__ . '/config', __DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/ecs.php', __DIR__ . '/rector.php']
+        [__DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/ecs.php', __DIR__ . '/rector.php']
     );
 };
