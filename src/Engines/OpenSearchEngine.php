@@ -223,12 +223,14 @@ class OpenSearchEngine extends Engine
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();
     }
+
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
-     * @param  \Laravel\Scout\Builder  $builder
-     * @param  mixed  $results
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param \Laravel\Scout\Builder $builder
+     * @param mixed $results
+     * @param \Illuminate\Database\Eloquent\Model $model
+     *
      * @return \Illuminate\Support\LazyCollection
      */
     public function lazyMap(Builder $builder, $results, $model)
@@ -264,21 +266,25 @@ class OpenSearchEngine extends Engine
             ->orderBy($model->getKeyName())
             ->unsearchable();
     }
+
     /**
      * Create a search index.
      *
-     * @param  string  $name
-     * @param  array  $options
+     * @param string $name
+     * @param array $options
+     *
      * @return mixed
      */
     public function createIndex($name, array $options = []): void
     {
         $this->app->save($name);
     }
+
     /**
      * Delete a search index.
      *
-     * @param  string  $name
+     * @param string $name
+     *
      * @return mixed
      */
     public function deleteIndex($name): void
