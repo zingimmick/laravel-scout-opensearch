@@ -7,9 +7,11 @@ parameters:
     paths:
         - src
         - tests
+    reportUnmatchedIgnoredErrors: false
     checkMissingIterableValueType: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::searchableAs\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutModelsByIds\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::queryScoutModelsByIds\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::unsearchable\(\).#'
+        - '#Call to an undefined method Laravel\\Scout\\Builder::cursor\(\).#'
