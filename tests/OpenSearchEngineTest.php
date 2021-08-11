@@ -535,6 +535,9 @@ CODE_SAMPLE;
 
     public function testCursor(): void
     {
+        if (! method_exists(Builder::class, 'cursor')) {
+            self::markTestSkipped('Support for cursor available since 9.0.');
+        }
         $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -668,49 +671,6 @@ CODE_SAMPLE;
         $lazyCollection = SearchableModel::query()->create([
             'name' => 'test',
         ]);
-        $jsonData = [
-            'status' => 'OK',
-            'request_id' => '155310917017444091100003',
-            'result' => [
-                'searchtime' => 0.031081,
-                'total' => 1,
-                'num' => 1,
-                'viewtotal' => 1,
-                'compute_cost' => [[
-                    'index_name' => '84922',
-                    'value' => 0.292,
-                ],
-                ],
-                'items' => [],
-                'facet' => [],
-            ],
-            'qp' => [[
-                'app_name' => '84922',
-                'query_correction_info' => [[
-                    'index' => 'default',
-                    'original_query' => '平果手机充电器',
-                    'corrected_query' => '苹果手机充电器',
-                    'correction_level' => 1,
-                    'processor_name' => 'spell_check',
-                ],
-                ],
-            ],
-            ],
-            'errors' => [],
-            'tracer' => '',
-
-            'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
-        ];
-        $result = Json::encode($jsonData);
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
-            self::assertInstanceOf(SearchableModel::class, $lazyCollection);
-        }
         $result = <<<CODE_SAMPLE
 {
     "status": "OK",
