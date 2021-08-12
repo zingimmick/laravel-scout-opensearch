@@ -170,6 +170,9 @@ class OpenSearchEngine extends Engine
 
     public function mapIds($results)
     {
+        if ($results === null) {
+            return collect();
+        }
         return collect($results['items'])->pluck('fields.id')->values();
     }
 
