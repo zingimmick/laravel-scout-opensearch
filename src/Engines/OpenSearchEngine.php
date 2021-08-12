@@ -173,6 +173,7 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return collect();
         }
+
         return collect($results['items'])->pluck('fields.id')->values();
     }
 
