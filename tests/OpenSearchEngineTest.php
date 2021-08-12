@@ -82,30 +82,6 @@ class OpenSearchEngineTest extends TestCase
         $this->engine->update(Collection::make([$model]));
     }
 
-    public function testUpdateFailed(): void
-    {
-        $this->expectException(\Throwable::class);
-        $this->client->shouldReceive('post')
-            ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [
-        {
-            "code": 2001,
-            "message": "待查应用不存在.待查应用不存在。",
-            "params": {
-                "friendly_message": "待查应用不存在。"
-            }
-        }
-    ],
-    "request_id": "150116732819940316116461",
-    "status": "FAIL"
-}',
-            ]));
-        $this->engine->update(Collection::make([new SearchableModel()]));
-    }
-
     public function testDelete(): void
     {
         $this->client->shouldReceive('post')
@@ -120,30 +96,6 @@ class OpenSearchEngineTest extends TestCase
 }',
             ]));
         $this->engine->delete(Collection::make([]));
-        $this->engine->delete(Collection::make([new SearchableModel()]));
-    }
-
-    public function testDeleteFailed(): void
-    {
-        $this->expectException(\Throwable::class);
-        $this->client->shouldReceive('post')
-            ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [
-        {
-            "code": 2001,
-            "message": "待查应用不存在.待查应用不存在。",
-            "params": {
-                "friendly_message": "待查应用不存在。"
-            }
-        }
-    ],
-    "request_id": "150116732819940316116461",
-    "status": "FAIL"
-}',
-            ]));
         $this->engine->delete(Collection::make([new SearchableModel()]));
     }
 
@@ -278,7 +230,6 @@ class OpenSearchEngineTest extends TestCase
 
     public function testSearchFailed(): void
     {
-        $this->expectException(\Throwable::class);
         $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
@@ -300,7 +251,7 @@ class OpenSearchEngineTest extends TestCase
         $builder->where('foo', 1);
         $builder->orderBy('id', 'desc');
 
-        $this->engine->search($builder);
+        self::assertEmpty($this->engine->search($builder));
     }
 
     public function testCallback(): void
@@ -478,6 +429,7 @@ CODE_SAMPLE;
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
             ]));
+
         self::assertCount(1, SearchableModel::search('test')->get());
     }
 
