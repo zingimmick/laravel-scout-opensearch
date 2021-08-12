@@ -208,6 +208,9 @@ class OpenSearchEngine extends Engine
      */
     public function lazyMap(Builder $builder, $results, $model)
     {
+        if ($results === null) {
+            return LazyCollection::make($model->newCollection());
+        }
         if (
             (is_array($results['items']) || $results['items'] instanceof \Countable ? count(
                 $results['items']
