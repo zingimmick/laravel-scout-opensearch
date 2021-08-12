@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Zing\LaravelScout\OpenSearch\Engines;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Arr;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
@@ -89,15 +88,7 @@ class OpenSearchEngine extends Engine
             foreach ($objects as $object) {
                 $this->document->add($object);
             }
-            $result = $this->document->commit(...explode('.', $models->first()->searchableAs()));
-            $searchResult = json_decode($result->result, true);
-            if ($searchResult['status'] !== 'OK') {
-                $message = collect(Arr::get($searchResult, 'errors', []))->map(function ($error) {
-                    return "code: {$error['code']}, message: {$error['message']}";
-                })->implode('; ');
-
-                throw new \Exception($message ?: 'errors not return');
-            }
+            $this->document->commit(...explode('.', $models->first()->searchableAs()));
         }
     }
 
@@ -115,15 +106,7 @@ class OpenSearchEngine extends Engine
         foreach ($objects as $object) {
             $this->document->remove($object);
         }
-        $result = $this->document->commit(...explode('.', $models->first()->searchableAs()));
-        $searchResult = json_decode($result->result, true);
-        if ($searchResult['status'] !== 'OK') {
-            $message = collect(Arr::get($searchResult, 'errors', []))->map(function ($error) {
-                return "code: {$error['code']}, message: {$error['message']}";
-            })->implode('; ');
-
-            throw new \Exception($message ?: 'errors not return');
-        }
+        $this->document->commit(...explode('.', $models->first()->searchableAs()));
     }
 
     public function search(Builder $builder)
@@ -181,18 +164,8 @@ class OpenSearchEngine extends Engine
         }
         $result = $this->search->execute($searchParamsBuilder->build());
         $searchResult = json_decode($result->result, true);
-        if ($searchResult === null) {
-            throw new \Exception('Nothing return');
-        }
-        if ($searchResult['status'] !== 'OK') {
-            $message = collect(Arr::get($searchResult, 'errors', []))->map(function ($error) {
-                return "code: {$error['code']}, message: {$error['message']}";
-            })->implode('; ');
 
-            throw new \Exception($message ?: 'errors not return');
-        }
-
-        return $searchResult['result'];
+        return $searchResult['result'] ?? null;
     }
 
     public function mapIds($results)
