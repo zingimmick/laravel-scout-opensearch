@@ -233,7 +233,7 @@ class OpenSearchEngine extends Engine
 
     public function getTotalCount($results)
     {
-        return $results['total'];
+        return $results['total'] ?? 0;
     }
 
     public function flush($model): void
