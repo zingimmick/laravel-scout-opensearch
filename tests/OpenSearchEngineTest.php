@@ -453,11 +453,12 @@ CODE_SAMPLE;
                 'message' => '待查应用不存在.待查应用不存在。',
                 'params' => [
                     'friendly_message' => '待查应用不存在。',
-
-                ], ]],
+                ],
+            ],
+            ],
             'request_id' => '150116732819940316116461',
-            'status'
-             => 'FAIL', ];
+            'status' => 'FAIL',
+        ];
         $result = json_encode($jsonData);
 
         $this->client->shouldReceive('get')
@@ -716,11 +717,12 @@ CODE_SAMPLE;
                 'message' => '待查应用不存在.待查应用不存在。',
                 'params' => [
                     'friendly_message' => '待查应用不存在。',
-
-                ], ]],
+                ],
+            ],
+            ],
             'request_id' => '150116732819940316116461',
-            'status'
-             => 'FAIL', ];
+            'status' => 'FAIL',
+        ];
         $result = json_encode($jsonData);
 
         $this->client->shouldReceive('get')
@@ -834,11 +836,12 @@ CODE_SAMPLE;
                 'message' => '待查应用不存在.待查应用不存在。',
                 'params' => [
                     'friendly_message' => '待查应用不存在。',
-
-                ], ]],
+                ],
+            ],
+            ],
             'request_id' => '150116732819940316116461',
-            'status'
-             => 'FAIL', ];
+            'status' => 'FAIL',
+        ];
         $result = json_encode($jsonData);
 
         $this->client->shouldReceive('get')
