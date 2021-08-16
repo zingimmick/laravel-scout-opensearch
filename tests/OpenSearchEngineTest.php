@@ -225,7 +225,7 @@ class OpenSearchEngineTest extends TestCase
         $builder->orderBy('id', 'desc');
         $builder->orderBy('rank');
 
-        $this->engine->paginate($builder, 15, 1);
+        self::assertIsArray($this->engine->paginate($builder, 15, 1));
     }
 
     public function testSearchFailed(): void
@@ -251,7 +251,7 @@ class OpenSearchEngineTest extends TestCase
         $builder->where('foo', 1);
         $builder->orderBy('id', 'desc');
 
-        self::assertEmpty($this->engine->search($builder));
+        self::assertNull($this->engine->search($builder));
     }
 
     public function testCallback(): void
@@ -431,6 +431,42 @@ CODE_SAMPLE;
             ]));
 
         self::assertCount(1, SearchableModel::search('test')->get());
+    }
+
+    public function testSeachableFailed(): void
+    {
+        $this->client->shouldReceive('post')
+            ->andReturn(new OpenSearchResult([
+                'result' => '{
+    "errors": [],
+    "request_id": "150116724719940316170289",
+    "status": "OK",
+    "result": true
+}',
+            ]));
+        SearchableModel::query()->create([
+            'name' => 'test',
+        ]);
+        $jsonData = [
+            'errors' => [[
+                'code' => 2001,
+                'message' => '待查应用不存在.待查应用不存在。',
+                'params' => [
+                    'friendly_message' => '待查应用不存在。',
+
+                ], ]],
+            'request_id' => '150116732819940316116461',
+            'status'
+             => 'FAIL', ];
+        $result = json_encode($jsonData);
+
+        $this->client->shouldReceive('get')
+            ->times(1)
+            ->andReturn(new OpenSearchResult([
+                'result' => $result,
+            ]));
+
+        self::assertCount(0, SearchableModel::search('test')->get());
     }
 
     public function testSearchEmpty(): void
@@ -614,6 +650,87 @@ CODE_SAMPLE;
         }
     }
 
+    public function testCursorFailed(): void
+    {
+        if (! method_exists(Builder::class, 'cursor')) {
+            self::markTestSkipped('Support for cursor available since 9.0.');
+        }
+        $this->client->shouldReceive('post')
+            ->andReturn(new OpenSearchResult([
+                'result' => '{
+    "errors": [],
+    "request_id": "150116724719940316170289",
+    "status": "OK",
+    "result": true
+}',
+            ]));
+        $lazyCollection = SearchableModel::query()->create([
+            'name' => 'test',
+        ]);
+        $jsonData = [
+            'status' => 'OK',
+            'request_id' => '155310917017444091100003',
+            'result' => [
+                'searchtime' => 0.031081,
+                'total' => 1,
+                'num' => 1,
+                'viewtotal' => 1,
+                'compute_cost' => [[
+                    'index_name' => '84922',
+                    'value' => 0.292,
+                ],
+                ],
+                'items' => [],
+                'facet' => [],
+            ],
+            'qp' => [[
+                'app_name' => '84922',
+                'query_correction_info' => [[
+                    'index' => 'default',
+                    'original_query' => '平果手机充电器',
+                    'corrected_query' => '苹果手机充电器',
+                    'correction_level' => 1,
+                    'processor_name' => 'spell_check',
+                ],
+                ],
+            ],
+            ],
+            'errors' => [],
+            'tracer' => '',
+
+            'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
+        ];
+        $result = json_encode($jsonData);
+
+        $this->client->shouldReceive('get')
+            ->times(1)
+            ->andReturn(new OpenSearchResult([
+                'result' => $result,
+            ]));
+        foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
+            self::assertInstanceOf(SearchableModel::class, $lazyCollection);
+        }
+        $jsonData = [
+            'errors' => [[
+                'code' => 2001,
+                'message' => '待查应用不存在.待查应用不存在。',
+                'params' => [
+                    'friendly_message' => '待查应用不存在。',
+
+                ], ]],
+            'request_id' => '150116732819940316116461',
+            'status'
+             => 'FAIL', ];
+        $result = json_encode($jsonData);
+
+        $this->client->shouldReceive('get')
+            ->times(1)
+            ->andReturn(new OpenSearchResult([
+                'result' => $result,
+            ]));
+        self::assertCount(0, SearchableModel::search('test')->cursor());
+    }
+
     public function testPaginate2(): void
     {
         $this->client->shouldReceive('post')
@@ -694,6 +811,48 @@ CODE_SAMPLE;
                 'result' => $result,
             ]));
         self::assertSame(1, SearchableModel::search('test')->query(function (): void {
+        })->paginate()->total());
+    }
+
+    public function testPaginateFailed(): void
+    {
+        $this->client->shouldReceive('post')
+            ->andReturn(new OpenSearchResult([
+                'result' => '{
+    "errors": [],
+    "request_id": "150116724719940316170289",
+    "status": "OK",
+    "result": true
+}',
+            ]));
+        SearchableModel::query()->create([
+            'name' => 'test',
+        ]);
+        $jsonData = [
+            'errors' => [[
+                'code' => 2001,
+                'message' => '待查应用不存在.待查应用不存在。',
+                'params' => [
+                    'friendly_message' => '待查应用不存在。',
+
+                ], ]],
+            'request_id' => '150116732819940316116461',
+            'status'
+             => 'FAIL', ];
+        $result = json_encode($jsonData);
+
+        $this->client->shouldReceive('get')
+            ->times(1)
+            ->andReturn(new OpenSearchResult([
+                'result' => $result,
+            ]));
+        self::assertSame(0, SearchableModel::search('test')->paginate()->total());
+        $this->client->shouldReceive('get')
+            ->times(1)
+            ->andReturn(new OpenSearchResult([
+                'result' => $result,
+            ]));
+        self::assertSame(0, SearchableModel::search('test')->query(function (): void {
         })->paginate()->total());
     }
 
