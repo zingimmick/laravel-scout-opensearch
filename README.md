@@ -16,6 +16,22 @@ Require Laravel Scout OpenSearch using [Composer](https://getcomposer.org):
 composer require zing/laravel-scout-opensearch
 ```
 
+## Configuration
+
+```php
+return [
+    // ...
+    'opensearch' => [
+        "access_key" => env('OPENSEARCH_ACCESS_KEY', 'your-opensearch-access-key'),
+        "secret" => env('OPENSEARCH_SECRET', 'your-opensearch-secret'),
+        "host" => env('OPENSEARCH_HOST', 'your-opensearch-host'),
+        "options" => [
+            "debug" => env('OPENSEARCH_DEBUG', false),
+        ],
+    ],
+];
+```
+
 ## License
 
 Laravel Scout OpenSearch is an open-sourced software licensed under the [MIT license](LICENSE).
