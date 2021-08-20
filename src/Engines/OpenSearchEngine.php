@@ -88,8 +88,21 @@ class OpenSearchEngine extends Engine
             foreach ($objects as $object) {
                 $this->document->add($object);
             }
-            $this->document->commit(...explode('.', $models->first()->searchableAs()));
+            $this->document->commit(
+                $this->getAppName($models->first()->searchableAs()),
+                $this->getTableName($models->first()->searchableAs())
+            );
         }
+    }
+
+    protected function getAppName(string $searchableAs): string
+    {
+        return Str::before($searchableAs, '.');
+    }
+
+    protected function getTableName(string $searchableAs): string
+    {
+        return Str::after($searchableAs, '.');
     }
 
     public function delete($models): void
@@ -106,7 +119,10 @@ class OpenSearchEngine extends Engine
         foreach ($objects as $object) {
             $this->document->remove($object);
         }
-        $this->document->commit(...explode('.', $models->first()->searchableAs()));
+        $this->document->commit(
+            $this->getAppName($models->first()->searchableAs()),
+            $this->getTableName($models->first()->searchableAs())
+        );
     }
 
     public function search(Builder $builder)
@@ -114,7 +130,7 @@ class OpenSearchEngine extends Engine
         return $this->performSearch($builder, array_filter([
             'query' => $builder->query,
             'hits' => $builder->limit,
-            'appName' => Str::before($builder->model->searchableAs(), '.'),
+            'appName' => $this->getAppName($builder->model->searchableAs()),
             'format' => 'fulljson',
             'start' => 0,
         ]));
@@ -125,7 +141,7 @@ class OpenSearchEngine extends Engine
         return $this->performSearch($builder, array_filter([
             'query' => $builder->query,
             'hits' => $perPage,
-            'appName' => Str::before($builder->model->searchableAs(), '.'),
+            'appName' => $this->getAppName($builder->model->searchableAs()),
             'format' => 'fulljson',
             'start' => $perPage * ($page - 1),
         ]));
