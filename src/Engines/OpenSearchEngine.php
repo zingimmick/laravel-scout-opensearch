@@ -95,12 +95,12 @@ class OpenSearchEngine extends Engine
         }
     }
 
-    protected function getAppName($searchableAs)
+    protected function getAppName(string $searchableAs): string
     {
         return Str::before($searchableAs, '.');
     }
 
-    protected function getTableName($searchableAs)
+    protected function getTableName(string $searchableAs): string
     {
         return Str::after($searchableAs, '.');
     }
