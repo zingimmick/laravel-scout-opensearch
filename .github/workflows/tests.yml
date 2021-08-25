@@ -42,7 +42,7 @@ jobs:
         run: composer run-script test:phpunit -- --coverage-clover coverage.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2.0.2
+        uses: codecov/codecov-action@v2.0.3
         continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
