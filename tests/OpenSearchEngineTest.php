@@ -532,6 +532,7 @@ CODE_SAMPLE;
         if (! method_exists(Builder::class, 'cursor')) {
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
+
         $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -587,6 +588,7 @@ CODE_SAMPLE;
         foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
             self::assertInstanceOf(SearchableModel::class, $lazyCollection);
         }
+
         $result = <<<CODE_SAMPLE
 {
     "status": "OK",
@@ -656,6 +658,7 @@ CODE_SAMPLE;
         if (! method_exists(Builder::class, 'cursor')) {
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
+
         $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -711,6 +714,7 @@ CODE_SAMPLE;
         foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
             self::assertInstanceOf(SearchableModel::class, $lazyCollection);
         }
+
         $jsonData = [
             'errors' => [[
                 'code' => 2001,

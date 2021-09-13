@@ -88,6 +88,7 @@ class OpenSearchEngine extends Engine
             foreach ($objects as $object) {
                 $this->document->add($object);
             }
+
             $this->document->commit(
                 $this->getAppName($models->first()->searchableAs()),
                 $this->getTableName($models->first()->searchableAs())
@@ -110,6 +111,7 @@ class OpenSearchEngine extends Engine
         if ($models->isEmpty()) {
             return;
         }
+
         $objects = $models->map(function ($model) {
             return [
                 'id' => $model->getScoutKey(),
@@ -119,6 +121,7 @@ class OpenSearchEngine extends Engine
         foreach ($objects as $object) {
             $this->document->remove($object);
         }
+
         $this->document->commit(
             $this->getAppName($models->first()->searchableAs()),
             $this->getTableName($models->first()->searchableAs())
@@ -160,12 +163,14 @@ class OpenSearchEngine extends Engine
         if ($builder->callback !== null) {
             return call_user_func($builder->callback, $this->search, $builder->query, $options);
         }
+
         $query = $options['query'];
         $options['query'] = is_string($query) ? "'{$query}'" : $query;
         $searchParamsBuilder = new SearchParamsBuilder($options);
         if (empty($builder->orders)) {
             $searchParamsBuilder->addSort('id', SearchParamsBuilder::SORT_DECREASE);
         }
+
         foreach ($builder->orders as $order) {
             if ($order['direction'] === 'desc') {
                 $direction = SearchParamsBuilder::SORT_DECREASE;
@@ -175,9 +180,11 @@ class OpenSearchEngine extends Engine
                 $searchParamsBuilder->addSort($order['column'], $direction);
             }
         }
+
         foreach ($builder->wheres as $key => $value) {
             $searchParamsBuilder->setFilter("{$key}={$value}");
         }
+
         $result = $this->search->execute($searchParamsBuilder->build());
         $searchResult = json_decode($result->result, true);
 
@@ -198,6 +205,7 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return $model->newCollection();
         }
+
         if (
             (is_array($results['items']) || $results['items'] instanceof \Countable ? count(
                 $results['items']
@@ -205,6 +213,7 @@ class OpenSearchEngine extends Engine
         ) {
             return $model->newCollection();
         }
+
         $objectIds = collect($results['items'])->pluck('fields.id')->values()->all();
 
         $objectIdPositions = array_flip($objectIds);
@@ -231,6 +240,7 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
         }
+
         if (
             (is_array($results['items']) || $results['items'] instanceof \Countable ? count(
                 $results['items']
