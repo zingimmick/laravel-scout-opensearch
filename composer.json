@@ -24,11 +24,8 @@
         "nunomaduro/larastan": "^0.7.2",
         "orchestra/testbench": "^4.0 || ^5.0 || ^6.0",
         "phpstan/phpstan-mockery": "^0.12.14",
-        "phpunit/phpunit": "^8.0 || ^9.3.3",
+        "phpunit/phpunit": "^8.0,<8.5.12 || ^9.3.3",
         "zing/coding-standard": "^4.0"
-    },
-    "conflict": {
-        "phpunit/phpunit": "^8.5.12"
     },
     "autoload": {
         "psr-4": {
