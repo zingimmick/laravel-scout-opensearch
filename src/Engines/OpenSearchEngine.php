@@ -154,8 +154,6 @@ class OpenSearchEngine extends Engine
      * @param \Laravel\Scout\Builder $builder
      * @param array $options
      *
-     * @throws \Exception
-     *
      * @return mixed
      */
     protected function performSearch(Builder $builder, array $options = [])
