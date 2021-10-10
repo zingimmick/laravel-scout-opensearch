@@ -49,7 +49,6 @@ class OpenSearchEngine extends Engine
     /**
      * Create a new engine instance.
      *
-     * @param \OpenSearch\Client\OpenSearchClient $opensearch
      * @param bool $softDelete
      */
     public function __construct(OpenSearchClient $opensearch, $softDelete = false)
@@ -151,9 +150,6 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param \Laravel\Scout\Builder $builder
-     * @param array $options
-     *
      * @return mixed
      */
     protected function performSearch(Builder $builder, array $options = [])
@@ -163,7 +159,7 @@ class OpenSearchEngine extends Engine
         }
 
         $query = $options['query'];
-        $options['query'] = is_string($query) ? "'{$query}'" : $query;
+        $options['query'] = is_string($query) ? sprintf("'%s'", $query) : $query;
         $searchParamsBuilder = new SearchParamsBuilder($options);
         if (empty($builder->orders)) {
             $searchParamsBuilder->addSort('id', SearchParamsBuilder::SORT_DECREASE);
@@ -180,7 +176,7 @@ class OpenSearchEngine extends Engine
         }
 
         foreach ($builder->wheres as $key => $value) {
-            $searchParamsBuilder->setFilter("{$key}={$value}");
+            $searchParamsBuilder->setFilter(sprintf('%s=%s', $key, $value));
         }
 
         $result = $this->search->execute($searchParamsBuilder->build());
@@ -227,7 +223,6 @@ class OpenSearchEngine extends Engine
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
-     * @param \Laravel\Scout\Builder $builder
      * @param mixed $results
      * @param \Illuminate\Database\Eloquent\Model $model
      *
@@ -275,7 +270,6 @@ class OpenSearchEngine extends Engine
      * Create a search index.
      *
      * @param string $name
-     * @param array $options
      *
      * @return mixed
      */
