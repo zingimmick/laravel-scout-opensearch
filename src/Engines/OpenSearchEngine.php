@@ -290,8 +290,6 @@ class OpenSearchEngine extends Engine
      * Create a search index.
      *
      * @param string $name
-     *
-     * @return mixed
      */
     public function createIndex($name, array $options = []): \OpenSearch\Generated\Common\OpenSearchResult
     {
@@ -302,8 +300,6 @@ class OpenSearchEngine extends Engine
      * Delete a search index.
      *
      * @param string $name
-     *
-     * @return mixed
      */
     public function deleteIndex($name): \OpenSearch\Generated\Common\OpenSearchResult
     {
