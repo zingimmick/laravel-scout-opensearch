@@ -17,23 +17,23 @@ class SearchableModel extends Model
 
     use Searchable;
 
-    /**
-     * @return string
-     */
-    public function searchableAs()
+    public function searchableAs(): string
     {
         return 'app.table';
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'id' => $this->getScoutKey(),
         ];
     }
 
+    /**
+     * @var string[]
+     */
     protected $fillable = ['name'];
 }
