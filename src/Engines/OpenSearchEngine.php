@@ -13,6 +13,7 @@ use OpenSearch\Client\AppClient;
 use OpenSearch\Client\DocumentClient;
 use OpenSearch\Client\OpenSearchClient;
 use OpenSearch\Client\SearchClient;
+use OpenSearch\Generated\Common\OpenSearchResult;
 use OpenSearch\Util\SearchParamsBuilder;
 
 class OpenSearchEngine extends Engine
@@ -111,7 +112,7 @@ class OpenSearchEngine extends Engine
             return;
         }
 
-        $objects = $models->map(function ($model) {
+        $objects = $models->map(function ($model): array {
             return [
                 'id' => $model->getScoutKey(),
             ];
@@ -127,6 +128,9 @@ class OpenSearchEngine extends Engine
         );
     }
 
+    /**
+     * @return mixed
+     */
     public function search(Builder $builder)
     {
         return $this->performSearch($builder, array_filter([
@@ -138,6 +142,12 @@ class OpenSearchEngine extends Engine
         ]));
     }
 
+    /**
+     * @param mixed $perPage
+     * @param mixed $page
+     *
+     * @return mixed
+     */
     public function paginate(Builder $builder, $perPage, $page)
     {
         return $this->performSearch($builder, array_filter([
@@ -185,7 +195,7 @@ class OpenSearchEngine extends Engine
         return $searchResult['result'] ?? null;
     }
 
-    public function mapIds($results)
+    public function mapIds($results): \Illuminate\Support\Collection
     {
         if ($results === null) {
             return collect();
@@ -194,6 +204,12 @@ class OpenSearchEngine extends Engine
         return collect($results['items'])->pluck('fields.id')->values();
     }
 
+    /**
+     * @param mixed $results
+     * @param mixed $model
+     *
+     * @return \Illuminate\Database\Eloquent\Collection|mixed
+     */
     public function map(Builder $builder, $results, $model)
     {
         if ($results === null) {
@@ -213,7 +229,7 @@ class OpenSearchEngine extends Engine
         $objectIdPositions = array_flip($objectIds);
 
         return $model->getScoutModelsByIds($builder, $objectIds)
-            ->filter(function ($model) use ($objectIds) {
+            ->filter(function ($model) use ($objectIds): bool {
                 return in_array($model->getScoutKey(), $objectIds);
             })->sortBy(function ($model) use ($objectIdPositions) {
                 return $objectIdPositions[$model->getScoutKey()];
@@ -226,7 +242,7 @@ class OpenSearchEngine extends Engine
      * @param mixed $results
      * @param \Illuminate\Database\Eloquent\Model $model
      *
-     * @return \Illuminate\Support\LazyCollection
+     * @return \Illuminate\Support\LazyCollection|mixed
      */
     public function lazyMap(Builder $builder, $results, $model)
     {
@@ -247,13 +263,18 @@ class OpenSearchEngine extends Engine
 
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
-            ->filter(function ($model) use ($objectIds) {
+            ->filter(function ($model) use ($objectIds): bool {
                 return in_array($model->getScoutKey(), $objectIds);
             })->sortBy(function ($model) use ($objectIdPositions) {
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();
     }
 
+    /**
+     * @param mixed $results
+     *
+     * @return int|mixed
+     */
     public function getTotalCount($results)
     {
         return $results['total'] ?? 0;
@@ -270,10 +291,8 @@ class OpenSearchEngine extends Engine
      * Create a search index.
      *
      * @param string $name
-     *
-     * @return mixed
      */
-    public function createIndex($name, array $options = [])
+    public function createIndex($name, array $options = []): OpenSearchResult
     {
         return $this->app->save($name);
     }
@@ -282,22 +301,16 @@ class OpenSearchEngine extends Engine
      * Delete a search index.
      *
      * @param string $name
-     *
-     * @return mixed
      */
-    public function deleteIndex($name)
+    public function deleteIndex($name): OpenSearchResult
     {
         return $this->app->removeById($name);
     }
 
     /**
      * Determine if the given model uses soft deletes.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $model
-     *
-     * @return bool
      */
-    protected function usesSoftDelete($model)
+    protected function usesSoftDelete(\Illuminate\Database\Eloquent\Model $model): bool
     {
         return in_array(SoftDeletes::class, class_uses_recursive($model), true);
     }

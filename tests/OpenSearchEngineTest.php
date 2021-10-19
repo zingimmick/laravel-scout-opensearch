@@ -35,7 +35,7 @@ class OpenSearchEngineTest extends TestCase
 
         $this->client = Mockery::mock(OpenSearchClient::class);
         $this->engine = new OpenSearchEngine($this->client);
-        resolve(EngineManager::class)->extend('opensearch', function () {
+        resolve(EngineManager::class)->extend('opensearch', function (): OpenSearchEngine {
             return $this->engine;
         });
     }
@@ -314,7 +314,7 @@ class OpenSearchEngineTest extends TestCase
         $builder = new Builder(
             new SearchableModel(),
             'huayra',
-            function (SearchClient $client, $query, $params) {
+            function (SearchClient $client, $query, $params): OpenSearchResult {
                 $this->assertNotEmpty($params);
                 $this->assertSame('huayra', $query);
 
