@@ -13,6 +13,7 @@ use OpenSearch\Client\AppClient;
 use OpenSearch\Client\DocumentClient;
 use OpenSearch\Client\OpenSearchClient;
 use OpenSearch\Client\SearchClient;
+use OpenSearch\Generated\Common\OpenSearchResult;
 use OpenSearch\Util\SearchParamsBuilder;
 
 class OpenSearchEngine extends Engine
@@ -291,7 +292,7 @@ class OpenSearchEngine extends Engine
      *
      * @param string $name
      */
-    public function createIndex($name, array $options = []): \OpenSearch\Generated\Common\OpenSearchResult
+    public function createIndex($name, array $options = []): OpenSearchResult
     {
         return $this->app->save($name);
     }
@@ -301,7 +302,7 @@ class OpenSearchEngine extends Engine
      *
      * @param string $name
      */
-    public function deleteIndex($name): \OpenSearch\Generated\Common\OpenSearchResult
+    public function deleteIndex($name): OpenSearchResult
     {
         return $this->app->removeById($name);
     }
