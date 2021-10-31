@@ -14,7 +14,6 @@ use Laravel\Scout\Searchable;
 class SearchableModel extends Model
 {
     use SoftDeletes;
-
     use Searchable;
 
     public function searchableAs(): string
