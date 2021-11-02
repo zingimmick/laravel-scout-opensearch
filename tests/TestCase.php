@@ -19,6 +19,11 @@ class TestCase extends BaseTestCase
         $this->setUpDatabase();
     }
 
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     *
+     * @return array<class-string<\Illuminate\Support\ServiceProvider>>
+     */
     protected function getPackageProviders($app)
     {
         return [ScoutServiceProvider::class, OpenSearchServiceProvider::class];
