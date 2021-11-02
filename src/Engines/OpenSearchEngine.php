@@ -160,6 +160,8 @@ class OpenSearchEngine extends Engine
     }
 
     /**
+     * @param array<string, mixed> $options
+     *
      * @return mixed
      */
     protected function performSearch(Builder $builder, array $options = [])
@@ -291,6 +293,7 @@ class OpenSearchEngine extends Engine
      * Create a search index.
      *
      * @param string $name
+     * @param array<string, mixed> $options
      */
     public function createIndex($name, array $options = []): OpenSearchResult
     {
