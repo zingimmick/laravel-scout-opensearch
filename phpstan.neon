@@ -3,7 +3,7 @@ includes:
     - vendor/phpstan/phpstan-mockery/extension.neon
 
 parameters:
-    level: max
+    level: 8
     paths:
         - src
         - tests
@@ -13,3 +13,5 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::queryScoutModelsByIds\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::unsearchable\(\).#'
         - '#Call to an undefined method Laravel\\Scout\\Builder::cursor\(\).#'
+        - '#Parameter (.*?) of method (.*?) expects Illuminate\\Database\\Eloquent\\Collection, Illuminate\\Support\\Collection<(.*?)> given.#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutModelsByIds\(\).#'

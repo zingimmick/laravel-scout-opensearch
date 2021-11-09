@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Zing\LaravelScout\OpenSearch\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\ScoutServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -31,7 +32,7 @@ class TestCase extends BaseTestCase
 
     protected function getEnvironmentSetUp($app): void
     {
-        config()->set(
+        Config::set(
             'database',
             [
                 'default' => 'testing',
@@ -49,10 +50,8 @@ class TestCase extends BaseTestCase
                 ],
             ]
         );
-        config()
-            ->set('scout.driver', 'opensearch');
-        config()
-            ->set('scout.opensearch', [
+        Config::set('scout.driver', 'opensearch');
+        Config::set('scout.opensearch', [
                 'access_key' => 'your-opensearch-access-key',
                 'secret' => 'your-opensearch-secret',
                 'host' => 'your-opensearch-host',
