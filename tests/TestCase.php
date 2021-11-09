@@ -52,10 +52,10 @@ class TestCase extends BaseTestCase
         );
         Config::set('scout.driver', 'opensearch');
         Config::set('scout.opensearch', [
-                'access_key' => 'your-opensearch-access-key',
-                'secret' => 'your-opensearch-secret',
-                'host' => 'your-opensearch-host',
-            ]);
+            'access_key' => 'your-opensearch-access-key',
+            'secret' => 'your-opensearch-secret',
+            'host' => 'your-opensearch-host',
+        ]);
     }
 
     protected function setUpDatabase(): void

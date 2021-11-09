@@ -200,7 +200,6 @@ class OpenSearchEngine extends Engine
 
     /**
      * @param array<string, mixed>|null $results
-     * @return \Illuminate\Support\Collection
      */
     public function mapIds($results): \Illuminate\Support\Collection
     {
