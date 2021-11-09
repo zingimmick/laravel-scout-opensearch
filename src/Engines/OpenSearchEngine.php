@@ -192,11 +192,15 @@ class OpenSearchEngine extends Engine
         }
 
         $result = $this->search->execute($searchParamsBuilder->build());
+        /** @var array<string, mixed> $searchResult */
         $searchResult = json_decode($result->result, true);
 
         return $searchResult['result'] ?? null;
     }
 
+    /**
+     * @param array<string, mixed>|null $results
+     */
     public function mapIds($results): \Illuminate\Support\Collection
     {
         if ($results === null) {
@@ -207,8 +211,8 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param mixed $results
-     * @param mixed $model
+     * @param array<string, mixed>|null $results
+     * @param \Illuminate\Database\Eloquent\Model $model
      *
      * @return \Illuminate\Database\Eloquent\Collection|mixed
      */
@@ -241,7 +245,7 @@ class OpenSearchEngine extends Engine
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
-     * @param mixed $results
+     * @param array<string, mixed>|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
      *
      * @return \Illuminate\Support\LazyCollection|mixed
@@ -273,7 +277,7 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param mixed $results
+     * @param array<string, mixed>|null $results
      *
      * @return int|mixed
      */
