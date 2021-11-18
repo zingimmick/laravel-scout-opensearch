@@ -1,4 +1,4 @@
-name: lint
+name: Lint
 
 on:
   pull_request:
@@ -7,28 +7,6 @@ on:
       - master
 
 jobs:
-  ecs:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        php: [7.2, 7.3, 7.4, 8.0]
-
-    name: PHP ${{ matrix.php }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2.4.0
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@2.15.0
-        with:
-          php-version: ${{ matrix.php }}
-
-      - name: Install dependencies
-        uses: ramsey/composer-install@v1
-        with:
-          dependency-versions: "highest"
-
-      - name: Execute code standard tests
-        run: composer run-script lint
+  lint:
+    name: Lint
+    uses: zingimmick/.github/.github/workflows/lint.yml@main
