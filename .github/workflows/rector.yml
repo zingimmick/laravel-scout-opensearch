@@ -28,7 +28,7 @@ jobs:
       - run: vendor/bin/ecs check --fix --ansi
 
       - if: github.event.pull_request.head.repo.full_name == github.repository
-        uses: EndBug/add-and-commit@v7.4.0
+        uses: EndBug/add-and-commit@v7.5.0
         with:
           add: .
           message: "Rector Rectify"
