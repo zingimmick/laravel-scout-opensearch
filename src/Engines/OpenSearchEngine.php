@@ -71,7 +71,7 @@ class OpenSearchEngine extends Engine
             $models->each->pushSoftDeleteMetadata();
         }
 
-        $objects = $models->map(function ($model): void {
+        $objects = $models->map(function ($model): ?array {
             $searchableData = $model->toSearchableArray();
             if (empty($searchableData)) {
                 return;
