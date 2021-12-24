@@ -25,7 +25,7 @@
         "orchestra/testbench": "^4.0 || ^5.0 || ^6.0",
         "phpstan/phpstan-mockery": "^1.0",
         "phpunit/phpunit": "^8.0,<8.5.12 || ^9.3.3",
-        "zing/coding-standard": "^4.0"
+        "zing/coding-standard": "^4.0 || ^5.0"
     },
     "autoload": {
         "psr-4": {
