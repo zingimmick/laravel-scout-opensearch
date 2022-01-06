@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Zing\LaravelScout\OpenSearch\Tests;
 
-class ScoutTest extends TestCase
+/**
+ * @internal
+ */
+final class ScoutTest extends TestCase
 {
     public function testSearch(): void
     {
