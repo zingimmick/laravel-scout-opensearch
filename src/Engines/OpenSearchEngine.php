@@ -236,7 +236,7 @@ class OpenSearchEngine extends Engine
 
         return $model->getScoutModelsByIds($builder, $objectIds)
             ->filter(function ($model) use ($objectIds): bool {
-                return in_array($model->getScoutKey(), $objectIds);
+                return in_array($model->getScoutKey(), $objectIds, false);
             })->sortBy(function ($model) use ($objectIdPositions): int {
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();
@@ -270,7 +270,7 @@ class OpenSearchEngine extends Engine
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
             ->filter(function ($model) use ($objectIds): bool {
-                return in_array($model->getScoutKey(), $objectIds);
+                return in_array($model->getScoutKey(), $objectIds, false);
             })->sortBy(function ($model) use ($objectIdPositions): int {
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();

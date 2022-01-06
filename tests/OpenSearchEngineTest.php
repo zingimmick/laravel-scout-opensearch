@@ -15,28 +15,31 @@ use OpenSearch\Generated\Common\OpenSearchResult;
 use OpenSearch\Util\SearchParamsBuilder;
 use Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine;
 
-class OpenSearchEngineTest extends TestCase
+/**
+ * @internal
+ */
+final class OpenSearchEngineTest extends TestCase
 {
     use DatabaseTransactions;
 
     /**
      * @var \Mockery\MockInterface&\OpenSearch\Client\OpenSearchClient
      */
-    protected $client;
+    private $client;
 
     /**
      * @var \Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine
      */
-    protected $engine;
+    private $openSearchEngine;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->client = Mockery::mock(OpenSearchClient::class);
-        $this->engine = new OpenSearchEngine($this->client);
+        $this->openSearchEngine = new OpenSearchEngine($this->client);
         resolve(EngineManager::class)->extend('opensearch', function (): OpenSearchEngine {
-            return $this->engine;
+            return $this->openSearchEngine;
         });
     }
 
@@ -53,8 +56,8 @@ class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $this->engine->update(Collection::make());
-        $this->engine->update(Collection::make([new SearchableModel()]));
+        $this->openSearchEngine->update(Collection::make());
+        $this->openSearchEngine->update(Collection::make([new SearchableModel()]));
     }
 
     public function testUpdateWithSoftDelete(): void
@@ -79,7 +82,7 @@ class OpenSearchEngineTest extends TestCase
         $model = Mockery::mock(SearchableModel::class);
         $model->shouldReceive('toSearchableArray')
             ->andReturn([]);
-        $this->engine->update(Collection::make([$model]));
+        $this->openSearchEngine->update(Collection::make([$model]));
     }
 
     public function testDelete(): void
@@ -95,8 +98,8 @@ class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $this->engine->delete(Collection::make([]));
-        $this->engine->delete(Collection::make([new SearchableModel()]));
+        $this->openSearchEngine->delete(Collection::make([]));
+        $this->openSearchEngine->delete(Collection::make([new SearchableModel()]));
     }
 
     public function testSearch(): void
@@ -160,7 +163,7 @@ class OpenSearchEngineTest extends TestCase
         $builder->where('foo', 1);
         $builder->orderBy('id', 'desc');
 
-        $this->engine->search($builder);
+        $this->openSearchEngine->search($builder);
     }
 
     public function testPaginate(): void
@@ -225,7 +228,7 @@ class OpenSearchEngineTest extends TestCase
         $builder->orderBy('id', 'desc');
         $builder->orderBy('rank');
 
-        self::assertIsArray($this->engine->paginate($builder, 15, 1));
+        self::assertIsArray($this->openSearchEngine->paginate($builder, 15, 1));
     }
 
     public function testSearchFailed(): void
@@ -251,7 +254,7 @@ class OpenSearchEngineTest extends TestCase
         $builder->where('foo', 1);
         $builder->orderBy('id', 'desc');
 
-        self::assertNull($this->engine->search($builder));
+        self::assertNull($this->openSearchEngine->search($builder));
     }
 
     public function testCallback(): void
@@ -321,7 +324,7 @@ class OpenSearchEngineTest extends TestCase
                 return $client->execute((new SearchParamsBuilder())->build());
             }
         );
-        $this->engine->search($builder);
+        $this->openSearchEngine->search($builder);
     }
 
     public function testCreateIndex(): void
@@ -337,7 +340,7 @@ class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $this->engine->createIndex('test');
+        $this->openSearchEngine->createIndex('test');
     }
 
     public function testDeleteIndex(): void
@@ -353,7 +356,7 @@ class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $this->engine->deleteIndex('test');
+        $this->openSearchEngine->deleteIndex('test');
     }
 
     public function testSeachable(): void
