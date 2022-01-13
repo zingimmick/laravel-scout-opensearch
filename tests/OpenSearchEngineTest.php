@@ -451,13 +451,14 @@ CODE_SAMPLE;
             'name' => 'test',
         ]);
         $jsonData = [
-            'errors' => [[
-                'code' => 2001,
-                'message' => '待查应用不存在.待查应用不存在。',
-                'params' => [
-                    'friendly_message' => '待查应用不存在。',
+            'errors' => [
+                [
+                    'code' => 2001,
+                    'message' => '待查应用不存在.待查应用不存在。',
+                    'params' => [
+                        'friendly_message' => '待查应用不存在。',
+                    ],
                 ],
-            ],
             ],
             'request_id' => '150116732819940316116461',
             'status' => 'FAIL',
@@ -495,25 +496,28 @@ CODE_SAMPLE;
                 'total' => 1,
                 'num' => 1,
                 'viewtotal' => 1,
-                'compute_cost' => [[
-                    'index_name' => '84922',
-                    'value' => 0.292,
-                ],
+                'compute_cost' => [
+                    [
+                        'index_name' => '84922',
+                        'value' => 0.292,
+                    ],
                 ],
                 'items' => [],
                 'facet' => [],
             ],
-            'qp' => [[
-                'app_name' => '84922',
-                'query_correction_info' => [[
-                    'index' => 'default',
-                    'original_query' => '平果手机充电器',
-                    'corrected_query' => '苹果手机充电器',
-                    'correction_level' => 1,
-                    'processor_name' => 'spell_check',
+            'qp' => [
+                [
+                    'app_name' => '84922',
+                    'query_correction_info' => [
+                        [
+                            'index' => 'default',
+                            'original_query' => '平果手机充电器',
+                            'corrected_query' => '苹果手机充电器',
+                            'correction_level' => 1,
+                            'processor_name' => 'spell_check',
+                        ],
+                    ],
                 ],
-                ],
-            ],
             ],
             'errors' => [],
             'tracer' => '',
@@ -556,25 +560,28 @@ CODE_SAMPLE;
                 'total' => 1,
                 'num' => 1,
                 'viewtotal' => 1,
-                'compute_cost' => [[
-                    'index_name' => '84922',
-                    'value' => 0.292,
-                ],
+                'compute_cost' => [
+                    [
+                        'index_name' => '84922',
+                        'value' => 0.292,
+                    ],
                 ],
                 'items' => [],
                 'facet' => [],
             ],
-            'qp' => [[
-                'app_name' => '84922',
-                'query_correction_info' => [[
-                    'index' => 'default',
-                    'original_query' => '平果手机充电器',
-                    'corrected_query' => '苹果手机充电器',
-                    'correction_level' => 1,
-                    'processor_name' => 'spell_check',
+            'qp' => [
+                [
+                    'app_name' => '84922',
+                    'query_correction_info' => [
+                        [
+                            'index' => 'default',
+                            'original_query' => '平果手机充电器',
+                            'corrected_query' => '苹果手机充电器',
+                            'correction_level' => 1,
+                            'processor_name' => 'spell_check',
+                        ],
+                    ],
                 ],
-                ],
-            ],
             ],
             'errors' => [],
             'tracer' => '',
@@ -682,25 +689,28 @@ CODE_SAMPLE;
                 'total' => 1,
                 'num' => 1,
                 'viewtotal' => 1,
-                'compute_cost' => [[
-                    'index_name' => '84922',
-                    'value' => 0.292,
-                ],
+                'compute_cost' => [
+                    [
+                        'index_name' => '84922',
+                        'value' => 0.292,
+                    ],
                 ],
                 'items' => [],
                 'facet' => [],
             ],
-            'qp' => [[
-                'app_name' => '84922',
-                'query_correction_info' => [[
-                    'index' => 'default',
-                    'original_query' => '平果手机充电器',
-                    'corrected_query' => '苹果手机充电器',
-                    'correction_level' => 1,
-                    'processor_name' => 'spell_check',
+            'qp' => [
+                [
+                    'app_name' => '84922',
+                    'query_correction_info' => [
+                        [
+                            'index' => 'default',
+                            'original_query' => '平果手机充电器',
+                            'corrected_query' => '苹果手机充电器',
+                            'correction_level' => 1,
+                            'processor_name' => 'spell_check',
+                        ],
+                    ],
                 ],
-                ],
-            ],
             ],
             'errors' => [],
             'tracer' => '',
@@ -719,13 +729,14 @@ CODE_SAMPLE;
         }
 
         $jsonData = [
-            'errors' => [[
-                'code' => 2001,
-                'message' => '待查应用不存在.待查应用不存在。',
-                'params' => [
-                    'friendly_message' => '待查应用不存在。',
+            'errors' => [
+                [
+                    'code' => 2001,
+                    'message' => '待查应用不存在.待查应用不存在。',
+                    'params' => [
+                        'friendly_message' => '待查应用不存在。',
+                    ],
                 ],
-            ],
             ],
             'request_id' => '150116732819940316116461',
             'status' => 'FAIL',
@@ -838,13 +849,14 @@ CODE_SAMPLE;
             'name' => 'test',
         ]);
         $jsonData = [
-            'errors' => [[
-                'code' => 2001,
-                'message' => '待查应用不存在.待查应用不存在。',
-                'params' => [
-                    'friendly_message' => '待查应用不存在。',
+            'errors' => [
+                [
+                    'code' => 2001,
+                    'message' => '待查应用不存在.待查应用不存在。',
+                    'params' => [
+                        'friendly_message' => '待查应用不存在。',
+                    ],
                 ],
-            ],
             ],
             'request_id' => '150116732819940316116461',
             'status' => 'FAIL',
