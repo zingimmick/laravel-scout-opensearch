@@ -7,9 +7,8 @@ use Symplify\EasyCodingStandard\ValueObject\Option;
 use Zing\CodingStandard\Set\ECSSetList;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
+    $containerConfigurator->import(ECSSetList::PHP_72);
     $containerConfigurator->import(ECSSetList::CUSTOM);
-    $containerConfigurator->import(ECSSetList::PHP71_MIGRATION);
-    $containerConfigurator->import(ECSSetList::PHP71_MIGRATION_RISKY);
 
     $parameters = $containerConfigurator->parameters();
     $parameters->set(Option::PARALLEL, true);
