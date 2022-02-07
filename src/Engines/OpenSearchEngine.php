@@ -192,6 +192,7 @@ class OpenSearchEngine extends Engine
         }
 
         $result = $this->search->execute($searchParamsBuilder->build());
+
         /** @var array<string, mixed> $searchResult */
         $searchResult = json_decode($result->result, true);
 

@@ -23,7 +23,7 @@ final class OpenSearchEngineTest extends TestCase
     use DatabaseTransactions;
 
     /**
-     * @var \Mockery\MockInterface&\OpenSearch\Client\OpenSearchClient
+     * @var \Mockery\MockInterface|\OpenSearch\Client\OpenSearchClient
      */
     private $client;
 
