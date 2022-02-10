@@ -1,5 +1,5 @@
 includes:
-    - ./vendor/nunomaduro/larastan/extension.neon
+    - vendor/nunomaduro/larastan/extension.neon
     - vendor/phpstan/phpstan-mockery/extension.neon
 
 parameters:
@@ -15,3 +15,4 @@ parameters:
         - '#Call to an undefined method Laravel\\Scout\\Builder::cursor\(\).#'
         - '#Parameter (.*?) of method (.*?) expects Illuminate\\Database\\Eloquent\\Collection, Illuminate\\Support\\Collection<(.*?)> given.#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutModelsByIds\(\).#'
+        - '#Unable to resolve the template type (.*) in call to function collect#'

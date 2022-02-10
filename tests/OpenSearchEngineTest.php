@@ -56,7 +56,7 @@ final class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $this->openSearchEngine->update(Collection::make());
+        $this->openSearchEngine->update((new SearchableModel())->newCollection());
         $this->openSearchEngine->update(Collection::make([new SearchableModel()]));
     }
 
@@ -98,7 +98,7 @@ final class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $this->openSearchEngine->delete(Collection::make([]));
+        $this->openSearchEngine->delete((new SearchableModel())->newCollection());
         $this->openSearchEngine->delete(Collection::make([new SearchableModel()]));
     }
 

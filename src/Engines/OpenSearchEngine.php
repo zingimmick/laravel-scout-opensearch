@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Zing\LaravelScout\OpenSearch\Engines;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
@@ -200,9 +202,9 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param array<string, mixed>|null $results
+     * @param array{items: mixed[]|null}|null $results
      */
-    public function mapIds($results): \Illuminate\Support\Collection
+    public function mapIds($results): Collection
     {
         if ($results === null) {
             return collect();
@@ -212,7 +214,7 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param array<string, mixed>|null $results
+     * @param array{items: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
      *
      * @return \Illuminate\Database\Eloquent\Collection|mixed
@@ -222,12 +224,10 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return $model->newCollection();
         }
-
-        if (
-            (is_array($results['items']) || $results['items'] instanceof \Countable ? count(
-                $results['items']
-            ) : 0) === 0
-        ) {
+        if (! isset($results['items'])) {
+            return $model->newCollection();
+        }
+        if ($results['items'] === []) {
             return $model->newCollection();
         }
 
@@ -246,7 +246,7 @@ class OpenSearchEngine extends Engine
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
-     * @param array<string, mixed>|null $results
+     * @param array{items: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
      *
      * @return \Illuminate\Support\LazyCollection|mixed
@@ -256,12 +256,10 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
         }
-
-        if (
-            (is_array($results['items']) || $results['items'] instanceof \Countable ? count(
-                $results['items']
-            ) : 0) === 0
-        ) {
+        if (! isset($results['items'])) {
+            return LazyCollection::make($model->newCollection());
+        }
+        if ($results['items'] === []) {
             return LazyCollection::make($model->newCollection());
         }
 
@@ -318,7 +316,7 @@ class OpenSearchEngine extends Engine
     /**
      * Determine if the given model uses soft deletes.
      */
-    protected function usesSoftDelete(\Illuminate\Database\Eloquent\Model $model): bool
+    protected function usesSoftDelete(Model $model): bool
     {
         return in_array(SoftDeletes::class, class_uses_recursive($model), true);
     }
