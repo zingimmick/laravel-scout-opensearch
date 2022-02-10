@@ -69,7 +69,9 @@ class OpenSearchEngine extends Engine
             return;
         }
 
-        if ($this->usesSoftDelete($models->first()) && $this->softDelete) {
+        /** @var \Illuminate\Database\Eloquent\Model $model */
+        $model = $models->first();
+        if ($this->usesSoftDelete($model) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
         }
 
@@ -91,10 +93,8 @@ class OpenSearchEngine extends Engine
                 $this->document->add($object);
             }
 
-            $this->document->commit(
-                $this->getAppName($models->first()->searchableAs()),
-                $this->getTableName($models->first()->searchableAs())
-            );
+            $searchableAs = $model->searchableAs();
+            $this->document->commit($this->getAppName($searchableAs), $this->getTableName($searchableAs));
         }
     }
 
@@ -124,10 +124,10 @@ class OpenSearchEngine extends Engine
             $this->document->remove($object);
         }
 
-        $this->document->commit(
-            $this->getAppName($models->first()->searchableAs()),
-            $this->getTableName($models->first()->searchableAs())
-        );
+        /** @var \Illuminate\Database\Eloquent\Model $model */
+        $model = $models->first();
+        $searchableAs = $model->searchableAs();
+        $this->document->commit($this->getAppName($searchableAs), $this->getTableName($searchableAs));
     }
 
     /**
@@ -224,9 +224,11 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return $model->newCollection();
         }
+
         if (! isset($results['items'])) {
             return $model->newCollection();
         }
+
         if ($results['items'] === []) {
             return $model->newCollection();
         }
@@ -256,9 +258,11 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
         }
+
         if (! isset($results['items'])) {
             return LazyCollection::make($model->newCollection());
         }
+
         if ($results['items'] === []) {
             return LazyCollection::make($model->newCollection());
         }
