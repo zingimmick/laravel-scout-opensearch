@@ -224,9 +224,11 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return $model->newCollection();
         }
+
         if (! isset($results['items'])) {
             return $model->newCollection();
         }
+
         if ($results['items'] === []) {
             return $model->newCollection();
         }
@@ -256,9 +258,11 @@ class OpenSearchEngine extends Engine
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
         }
+
         if (! isset($results['items'])) {
             return LazyCollection::make($model->newCollection());
         }
+
         if ($results['items'] === []) {
             return LazyCollection::make($model->newCollection());
         }
