@@ -13,8 +13,8 @@ use Laravel\Scout\Searchable;
  */
 class SearchableModel extends Model
 {
-    use SoftDeletes;
     use Searchable;
+    use SoftDeletes;
 
     public function searchableAs(): string
     {
