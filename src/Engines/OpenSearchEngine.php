@@ -169,11 +169,11 @@ class OpenSearchEngine extends Engine
     protected function performSearch(Builder $builder, array $options = [])
     {
         if ($builder->callback !== null) {
-            return call_user_func($builder->callback, $this->search, $builder->query, $options);
+            return \call_user_func($builder->callback, $this->search, $builder->query, $options);
         }
 
         $query = $options['query'];
-        $options['query'] = is_string($query) ? sprintf("'%s'", $query) : $query;
+        $options['query'] = \is_string($query) ? sprintf("'%s'", $query) : $query;
         $searchParamsBuilder = new SearchParamsBuilder($options);
         if (empty($builder->orders)) {
             $searchParamsBuilder->addSort('id', SearchParamsBuilder::SORT_DECREASE);
@@ -239,7 +239,7 @@ class OpenSearchEngine extends Engine
 
         return $model->getScoutModelsByIds($builder, $objectIds)
             ->filter(function ($model) use ($objectIds): bool {
-                return in_array($model->getScoutKey(), $objectIds, false);
+                return \in_array($model->getScoutKey(), $objectIds, false);
             })->sortBy(function ($model) use ($objectIdPositions): int {
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();
@@ -273,7 +273,7 @@ class OpenSearchEngine extends Engine
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
             ->filter(function ($model) use ($objectIds): bool {
-                return in_array($model->getScoutKey(), $objectIds, false);
+                return \in_array($model->getScoutKey(), $objectIds, false);
             })->sortBy(function ($model) use ($objectIdPositions): int {
                 return $objectIdPositions[$model->getScoutKey()];
             })->values();
@@ -322,6 +322,6 @@ class OpenSearchEngine extends Engine
      */
     protected function usesSoftDelete(Model $model): bool
     {
-        return in_array(SoftDeletes::class, class_uses_recursive($model), true);
+        return \in_array(SoftDeletes::class, class_uses_recursive($model), true);
     }
 }
