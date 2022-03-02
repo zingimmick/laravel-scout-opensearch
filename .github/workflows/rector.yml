@@ -9,7 +9,7 @@ jobs:
     steps:
       - if: github.event.pull_request.head.repo.full_name == github.repository
         name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -17,7 +17,7 @@ jobs:
 
       - if: github.event.pull_request.head.repo.full_name != github.repository
         name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: Setup PHP
         uses: shivammathur/setup-php@2.17.1
