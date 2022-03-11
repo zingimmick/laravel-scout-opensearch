@@ -20,6 +20,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(LevelSetList::UP_TO_PHP_72);
 
     $parameters = $containerConfigurator->parameters();
+    $parameters->set(Option::PARALLEL, true);
     $parameters->set(
         Option::SKIP,
         [
