@@ -1,0 +1,10 @@
+name: Auto-Fix
+on:
+  pull_request:
+
+jobs:
+  auto-fix:
+    name: Auto-Fix
+    uses: zingimmick/.github/.github/workflows/auto-fix.yml@main
+    secrets:
+      token: ${{ secrets.ACCESS_TOKEN }}
