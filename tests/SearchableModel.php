@@ -22,7 +22,7 @@ class SearchableModel extends Model
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{id: mixed}
      */
     public function toSearchableArray(): array
     {
