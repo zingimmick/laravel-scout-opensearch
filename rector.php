@@ -21,9 +21,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $parameters = $containerConfigurator->parameters();
     $parameters->set(Option::PHPSTAN_FOR_RECTOR_PATH, __DIR__ . '/phpstan.neon');
-    $parameters->set(Option::BOOTSTRAP_FILES, [
-        __DIR__ . '/vendor/nunomaduro/larastan/bootstrap.php',
-    ]);
+    $parameters->set(Option::BOOTSTRAP_FILES, [__DIR__ . '/vendor/nunomaduro/larastan/bootstrap.php']);
     $parameters->set(
         Option::SKIP,
         [
