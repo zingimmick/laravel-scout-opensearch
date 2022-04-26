@@ -23,9 +23,9 @@ final class OpenSearchEngineTest extends TestCase
     use DatabaseTransactions;
 
     /**
-     * @var \Mockery\LegacyMockInterface
+     * @var \Mockery\MockInterface|\OpenSearch\Client\OpenSearchClient
      */
-    private $legacyMock;
+    private $client;
 
     /**
      * @var \Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine
@@ -36,8 +36,8 @@ final class OpenSearchEngineTest extends TestCase
     {
         parent::setUp();
 
-        $this->legacyMock = Mockery::mock(OpenSearchClient::class);
-        $this->openSearchEngine = new OpenSearchEngine($this->legacyMock);
+        $this->client = Mockery::mock(OpenSearchClient::class);
+        $this->openSearchEngine = new OpenSearchEngine($this->client);
         resolve(EngineManager::class)->extend('opensearch', function (): OpenSearchEngine {
             return $this->openSearchEngine;
         });
@@ -45,7 +45,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testUpdate(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
             ->times(1)
             ->andReturn(new OpenSearchResult([
@@ -62,7 +62,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testUpdateWithSoftDelete(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
             ->times(1)
             ->andReturn(new OpenSearchResult([
@@ -73,7 +73,7 @@ final class OpenSearchEngineTest extends TestCase
     "result": true
 }',
             ]));
-        $openSearchEngine = new OpenSearchEngine($this->legacyMock, true);
+        $openSearchEngine = new OpenSearchEngine($this->client, true);
         $openSearchEngine->update(Collection::make([new SearchableModel()]));
     }
 
@@ -87,7 +87,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testDelete(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
             ->times(1)
             ->andReturn(new OpenSearchResult([
@@ -104,7 +104,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSearch(): void
     {
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -168,7 +168,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testPaginate(): void
     {
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -233,7 +233,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSearchFailed(): void
     {
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -259,7 +259,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testCallback(): void
     {
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => '{
@@ -329,7 +329,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testCreateIndex(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->withArgs(['/apps', 'test'])
             ->times(1)
             ->andReturn(new OpenSearchResult([
@@ -345,7 +345,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testDeleteIndex(): void
     {
-        $this->legacyMock->shouldReceive('delete')
+        $this->client->shouldReceive('delete')
             ->withArgs(['/apps/test'])
             ->times(1)
             ->andReturn(new OpenSearchResult([
@@ -361,7 +361,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSeachable(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -427,7 +427,7 @@ final class OpenSearchEngineTest extends TestCase
 }
 CODE_SAMPLE;
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -438,7 +438,7 @@ CODE_SAMPLE;
 
     public function testSeachableFailed(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -465,7 +465,7 @@ CODE_SAMPLE;
         ];
         $result = json_encode($jsonData);
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -476,7 +476,7 @@ CODE_SAMPLE;
 
     public function testSearchEmpty(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -526,7 +526,7 @@ CODE_SAMPLE;
         ];
         $result = json_encode($jsonData);
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -540,7 +540,7 @@ CODE_SAMPLE;
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
 
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -590,7 +590,7 @@ CODE_SAMPLE;
         ];
         $result = json_encode($jsonData);
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -653,7 +653,7 @@ CODE_SAMPLE;
 }
 CODE_SAMPLE;
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -669,7 +669,7 @@ CODE_SAMPLE;
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
 
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -719,7 +719,7 @@ CODE_SAMPLE;
         ];
         $result = json_encode($jsonData);
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -743,7 +743,7 @@ CODE_SAMPLE;
         ];
         $result = json_encode($jsonData);
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -753,7 +753,7 @@ CODE_SAMPLE;
 
     public function testPaginate2(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -819,13 +819,13 @@ CODE_SAMPLE;
 }
 CODE_SAMPLE;
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
             ]));
         self::assertSame(1, SearchableModel::search('test')->paginate()->total());
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -836,7 +836,7 @@ CODE_SAMPLE;
 
     public function testPaginateFailed(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
@@ -863,13 +863,13 @@ CODE_SAMPLE;
         ];
         $result = json_encode($jsonData);
 
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
             ]));
         self::assertSame(0, SearchableModel::search('test')->paginate()->total());
-        $this->legacyMock->shouldReceive('get')
+        $this->client->shouldReceive('get')
             ->times(1)
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
@@ -880,7 +880,7 @@ CODE_SAMPLE;
 
     public function testFlush(): void
     {
-        $this->legacyMock->shouldReceive('post')
+        $this->client->shouldReceive('post')
             ->andReturn(new OpenSearchResult([
                 'result' => '{
     "errors": [],
