@@ -7,7 +7,6 @@ parameters:
     paths:
         - src
         - tests
-    reportUnmatchedIgnoredErrors: false
     checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKey\(\).#'
@@ -17,7 +16,4 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::searchableAs\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::toSearchableArray\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::unsearchable\(\).#'
-        - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model>::pushSoftDeleteMetadata\(\).#'
-        - '#Call to an undefined method Laravel\\Scout\\Builder::cursor\(\).#'
-        - '#Parameter (.*?) of method (.*?) expects Illuminate\\Database\\Eloquent\\Collection, Illuminate\\Support\\Collection<(.*?)> given.#'
         - '#Unable to resolve the template type (.*) in call to function collect#'
