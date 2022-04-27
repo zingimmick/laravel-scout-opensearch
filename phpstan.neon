@@ -7,7 +7,6 @@ parameters:
     paths:
         - src
         - tests
-    reportUnmatchedIgnoredErrors: false
     checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKey\(\).#'
