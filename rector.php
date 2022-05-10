@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Rector\Core\Configuration\Option;
 use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
 use Rector\PHPUnit\Rector\Class_\AddSeeTestAnnotationRector;
@@ -11,11 +10,10 @@ use Rector\Privatization\Rector\Class_\FinalizeClassesWithoutChildrenRector;
 use Rector\Privatization\Rector\Class_\RepeatedLiteralToClassConstantRector;
 use Rector\Privatization\Rector\MethodCall\PrivatizeLocalGetterToPropertyRector;
 use Rector\Set\ValueObject\LevelSetList;
-use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Zing\CodingStandard\Set\RectorSetList;
 
-return static function (\Rector\Config\RectorConfig $rectorConfig): void {
-    $rectorConfig->sets([LevelSetList::UP_TO_PHP_72,  PHPUnitSetList::PHPUNIT_CODE_QUALITY,RectorSetList::CUSTOM, ]);
+return static function (Rector\Config\RectorConfig $rectorConfig): void {
+    $rectorConfig->sets([LevelSetList::UP_TO_PHP_72, PHPUnitSetList::PHPUNIT_CODE_QUALITY, RectorSetList::CUSTOM]);
     $rectorConfig->phpstanConfig(__DIR__ . '/phpstan.neon');
     $rectorConfig->bootstrapFiles([__DIR__ . '/vendor/nunomaduro/larastan/bootstrap.php']);
     $rectorConfig->skip([
