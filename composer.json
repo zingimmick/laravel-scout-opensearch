@@ -3,6 +3,11 @@
     "description": "Laravel Scout custom engine for OpenSearch",
     "keywords": ["opensearch", "laravel", "scout", "search"],
     "license": "MIT",
+    "homepage": "https://github.com/zingimmick/laravel-scout-opensearch",
+    "support": {
+        "issues": "https://github.com/zingimmick/laravel-scout-opensearch/issues",
+        "source": "https://github.com/zingimmick/laravel-scout-opensearch"
+    },
     "authors": [
         {
             "name": "zingimmick",
