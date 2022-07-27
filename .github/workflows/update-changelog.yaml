@@ -1,0 +1,11 @@
+name: "Update Changelog"
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  update:
+    uses: zingimmick/.github/.github/workflows/update-changelog.yml@main
+    secrets:
+      token: ${{ secrets.ACCESS_TOKEN }}
