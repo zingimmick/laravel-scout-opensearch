@@ -32,6 +32,30 @@ return [
 ];
 ```
 
+Set app name and table name for model
+
+```php
+class SearchableModel extends Model
+{
+    use Searchable;
+
+    public function searchableAs(): string
+    {
+        return '{{APP_NAME}}.{{TABLE_NAME}}';
+    }
+
+    /**
+     * @return array{id: mixed}
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->getScoutKey(),
+        ];
+    }
+}
+```
+
 ## License
 
 Laravel Scout OpenSearch is an open-sourced software licensed under the [MIT license](LICENSE).
