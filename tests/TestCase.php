@@ -62,7 +62,7 @@ abstract class TestCase extends BaseTestCase
     {
         DB::connection()->getSchemaBuilder()->create(
             'searchable_models',
-            function (Blueprint $table): void {
+            static function (Blueprint $table): void {
                 $table->bigIncrements('id');
                 $table->string('name')
                     ->default('');

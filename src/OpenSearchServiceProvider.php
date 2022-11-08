@@ -13,14 +13,18 @@ class OpenSearchServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        resolve(EngineManager::class)->extend('opensearch', function (): OpenSearchEngine {
-            return new OpenSearchEngine(resolve(OpenSearchClient::class), config('scout.soft_delete', false));
-        });
+        resolve(EngineManager::class)->extend(
+            'opensearch',
+            static fn (): OpenSearchEngine => new OpenSearchEngine(resolve(OpenSearchClient::class), config(
+                'scout.soft_delete',
+                false
+            ))
+        );
     }
 
     public function register(): void
     {
-        $this->app->singleton(OpenSearchClient::class, function ($app): OpenSearchClient {
+        $this->app->singleton(OpenSearchClient::class, static function ($app): OpenSearchClient {
             $config = $app['config']->get('scout.opensearch');
 
             return new OpenSearchClient(

@@ -27,10 +27,7 @@ final class OpenSearchEngineTest extends TestCase
      */
     private $client;
 
-    /**
-     * @var \Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine
-     */
-    private $openSearchEngine;
+    private \Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine $openSearchEngine;
 
     protected function setUp(): void
     {
@@ -38,9 +35,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $this->client = Mockery::mock(OpenSearchClient::class);
         $this->openSearchEngine = new OpenSearchEngine($this->client);
-        resolve(EngineManager::class)->extend('opensearch', function (): OpenSearchEngine {
-            return $this->openSearchEngine;
-        });
+        resolve(EngineManager::class)->extend('opensearch', fn (): OpenSearchEngine => $this->openSearchEngine);
     }
 
     public function testUpdate(): void
@@ -81,7 +76,7 @@ final class OpenSearchEngineTest extends TestCase
     {
         $model = Mockery::mock(SearchableModel::class);
         $model->shouldReceive('toSearchableArray')
-            ->andReturn([]);
+            ->andReturn([])->once();
         $this->openSearchEngine->update(Collection::make([$model]));
     }
 
@@ -374,58 +369,58 @@ final class OpenSearchEngineTest extends TestCase
             'name' => 'test',
         ]);
         $result = <<<CODE_SAMPLE
-{
-    "status": "OK",
-    "request_id": "155310917017444091100003",
-    "result": {
-        "searchtime": 0.031081,
-        "total": 1,
-        "num": 1,
-        "viewtotal": 1,
-        "compute_cost": [
             {
-                "index_name": "84922",
-                "value": 0.292
-            }
-        ],
-        "items": [
-            {
-                "fields": {
-                    "id": "{$model->getKey()}",
-                    "name": "我是一条新<em>文档</em>的标题",
-                    "phone": "18312345678",
-                    "index_name": "app_schema_demo"
+                "status": "OK",
+                "request_id": "155310917017444091100003",
+                "result": {
+                    "searchtime": 0.031081,
+                    "total": 1,
+                    "num": 1,
+                    "viewtotal": 1,
+                    "compute_cost": [
+                        {
+                            "index_name": "84922",
+                            "value": 0.292
+                        }
+                    ],
+                    "items": [
+                        {
+                            "fields": {
+                                "id": "{$model->getKey()}",
+                                "name": "我是一条新<em>文档</em>的标题",
+                                "phone": "18312345678",
+                                "index_name": "app_schema_demo"
+                            },
+                            "property": {},
+                            "attribute": {},
+                            "variableValue": {},
+                           "sortExprValues": [
+                                "10",
+                                "10000.1354238242"
+                            ]
+                        }
+                    ],
+                    "facet": []
                 },
-                "property": {},
-                "attribute": {},
-                "variableValue": {},
-               "sortExprValues": [
-                    "10",
-                    "10000.1354238242"
-                ]
+                "qp": [
+                    {
+                        "app_name": "84922",
+                        "query_correction_info": [
+                            {
+                                "index": "default",
+                                "original_query": "平果手机充电器",
+                                "corrected_query": "苹果手机充电器",
+                                "correction_level": 1,
+                                "processor_name": "spell_check"
+                            }
+                        ]
+                    }
+                ],
+                "errors": [],
+                "tracer": "",
+                "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
             }
-        ],
-        "facet": []
-    },
-    "qp": [
-        {
-            "app_name": "84922",
-            "query_correction_info": [
-                {
-                    "index": "default",
-                    "original_query": "平果手机充电器",
-                    "corrected_query": "苹果手机充电器",
-                    "correction_level": 1,
-                    "processor_name": "spell_check"
-                }
-            ]
-        }
-    ],
-    "errors": [],
-    "tracer": "",
-    "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-}
-CODE_SAMPLE;
+            CODE_SAMPLE;
 
         $this->client->shouldReceive('get')
             ->times(1)
@@ -600,58 +595,58 @@ CODE_SAMPLE;
         }
 
         $result = <<<CODE_SAMPLE
-{
-    "status": "OK",
-    "request_id": "155310917017444091100003",
-    "result": {
-        "searchtime": 0.031081,
-        "total": 1,
-        "num": 1,
-        "viewtotal": 1,
-        "compute_cost": [
             {
-                "index_name": "84922",
-                "value": 0.292
-            }
-        ],
-        "items": [
-         {
-                "fields": {
-                    "id": {$lazyCollection->getKey()},
-                    "name": "我是一条新<em>文档</em>的标题",
-                    "phone": "18312345678",
-                    "index_name": "app_schema_demo"
+                "status": "OK",
+                "request_id": "155310917017444091100003",
+                "result": {
+                    "searchtime": 0.031081,
+                    "total": 1,
+                    "num": 1,
+                    "viewtotal": 1,
+                    "compute_cost": [
+                        {
+                            "index_name": "84922",
+                            "value": 0.292
+                        }
+                    ],
+                    "items": [
+                     {
+                            "fields": {
+                                "id": {$lazyCollection->getKey()},
+                                "name": "我是一条新<em>文档</em>的标题",
+                                "phone": "18312345678",
+                                "index_name": "app_schema_demo"
+                            },
+                            "property": {},
+                            "attribute": {},
+                            "variableValue": {},
+                           "sortExprValues": [
+                                "10",
+                                "10000.1354238242"
+                            ]
+                        }
+                    ],
+                    "facet": []
                 },
-                "property": {},
-                "attribute": {},
-                "variableValue": {},
-               "sortExprValues": [
-                    "10",
-                    "10000.1354238242"
-                ]
+                "qp": [
+                    {
+                        "app_name": "84922",
+                        "query_correction_info": [
+                            {
+                                "index": "default",
+                                "original_query": "平果手机充电器",
+                                "corrected_query": "苹果手机充电器",
+                                "correction_level": 1,
+                                "processor_name": "spell_check"
+                            }
+                        ]
+                    }
+                ],
+                "errors": [],
+                "tracer": "",
+                "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
             }
-        ],
-        "facet": []
-    },
-    "qp": [
-        {
-            "app_name": "84922",
-            "query_correction_info": [
-                {
-                    "index": "default",
-                    "original_query": "平果手机充电器",
-                    "corrected_query": "苹果手机充电器",
-                    "correction_level": 1,
-                    "processor_name": "spell_check"
-                }
-            ]
-        }
-    ],
-    "errors": [],
-    "tracer": "",
-    "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-}
-CODE_SAMPLE;
+            CODE_SAMPLE;
 
         $this->client->shouldReceive('get')
             ->times(1)
@@ -766,58 +761,58 @@ CODE_SAMPLE;
             'name' => 'test',
         ]);
         $result = <<<CODE_SAMPLE
-{
-    "status": "OK",
-    "request_id": "155310917017444091100003",
-    "result": {
-        "searchtime": 0.031081,
-        "total": 1,
-        "num": 1,
-        "viewtotal": 1,
-        "compute_cost": [
             {
-                "index_name": "84922",
-                "value": 0.292
-            }
-        ],
-        "items": [
-         {
-                "fields": {
-                    "id": {$lazyCollection->getKey()},
-                    "name": "我是一条新<em>文档</em>的标题",
-                    "phone": "18312345678",
-                    "index_name": "app_schema_demo"
+                "status": "OK",
+                "request_id": "155310917017444091100003",
+                "result": {
+                    "searchtime": 0.031081,
+                    "total": 1,
+                    "num": 1,
+                    "viewtotal": 1,
+                    "compute_cost": [
+                        {
+                            "index_name": "84922",
+                            "value": 0.292
+                        }
+                    ],
+                    "items": [
+                     {
+                            "fields": {
+                                "id": {$lazyCollection->getKey()},
+                                "name": "我是一条新<em>文档</em>的标题",
+                                "phone": "18312345678",
+                                "index_name": "app_schema_demo"
+                            },
+                            "property": {},
+                            "attribute": {},
+                            "variableValue": {},
+                           "sortExprValues": [
+                                "10",
+                                "10000.1354238242"
+                            ]
+                        }
+                    ],
+                    "facet": []
                 },
-                "property": {},
-                "attribute": {},
-                "variableValue": {},
-               "sortExprValues": [
-                    "10",
-                    "10000.1354238242"
-                ]
+                "qp": [
+                    {
+                        "app_name": "84922",
+                        "query_correction_info": [
+                            {
+                                "index": "default",
+                                "original_query": "平果手机充电器",
+                                "corrected_query": "苹果手机充电器",
+                                "correction_level": 1,
+                                "processor_name": "spell_check"
+                            }
+                        ]
+                    }
+                ],
+                "errors": [],
+                "tracer": "",
+                "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
             }
-        ],
-        "facet": []
-    },
-    "qp": [
-        {
-            "app_name": "84922",
-            "query_correction_info": [
-                {
-                    "index": "default",
-                    "original_query": "平果手机充电器",
-                    "corrected_query": "苹果手机充电器",
-                    "correction_level": 1,
-                    "processor_name": "spell_check"
-                }
-            ]
-        }
-    ],
-    "errors": [],
-    "tracer": "",
-    "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-}
-CODE_SAMPLE;
+            CODE_SAMPLE;
 
         $this->client->shouldReceive('get')
             ->times(1)
@@ -830,8 +825,9 @@ CODE_SAMPLE;
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
             ]));
-        self::assertSame(1, SearchableModel::search('test')->query(function (): void {
-        })->paginate()->total());
+        self::assertSame(1, SearchableModel::search('test')->query(static function (): void {
+        })->paginate()
+            ->total());
     }
 
     public function testPaginateFailed(): void
@@ -874,8 +870,9 @@ CODE_SAMPLE;
             ->andReturn(new OpenSearchResult([
                 'result' => $result,
             ]));
-        self::assertSame(0, SearchableModel::search('test')->query(function (): void {
-        })->paginate()->total());
+        self::assertSame(0, SearchableModel::search('test')->query(static function (): void {
+        })->paginate()
+            ->total());
     }
 
     public function testFlush(): void
@@ -888,7 +885,7 @@ CODE_SAMPLE;
     "status": "OK",
     "result": true
 }',
-            ]));
+            ]))->twice();
         SearchableModel::query()->create([
             'name' => 'test',
         ]);

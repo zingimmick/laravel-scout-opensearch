@@ -20,47 +20,27 @@ use OpenSearch\Util\SearchParamsBuilder;
 
 class OpenSearchEngine extends Engine
 {
-    /**
-     * The Algolia client.
-     *
-     * @var \OpenSearch\Client\OpenSearchClient
-     */
-    protected $opensearch;
+    protected \OpenSearch\Client\DocumentClient $document;
 
-    /**
-     * Determines if soft deletes for Scout are enabled or not.
-     *
-     * @var bool
-     */
-    protected $softDelete = false;
+    protected \OpenSearch\Client\SearchClient $search;
 
-    /**
-     * @var \OpenSearch\Client\DocumentClient
-     */
-    protected $document;
-
-    /**
-     * @var \OpenSearch\Client\SearchClient
-     */
-    protected $search;
-
-    /**
-     * @var \OpenSearch\Client\AppClient
-     */
-    protected $app;
+    protected \OpenSearch\Client\AppClient $app;
 
     /**
      * Create a new engine instance.
      *
      * @param bool $softDelete
      */
-    public function __construct(OpenSearchClient $opensearch, $softDelete = false)
-    {
-        $this->opensearch = $opensearch;
-        $this->softDelete = $softDelete;
-        $this->document = new DocumentClient($opensearch);
-        $this->search = new SearchClient($opensearch);
-        $this->app = new AppClient($opensearch);
+    public function __construct(
+        /**
+         * The Algolia client.
+         */
+        protected OpenSearchClient $openSearchClient,
+        protected $softDelete = false
+    ) {
+        $this->document = new DocumentClient($openSearchClient);
+        $this->search = new SearchClient($openSearchClient);
+        $this->app = new AppClient($openSearchClient);
     }
 
     public function update($models): void
@@ -75,7 +55,7 @@ class OpenSearchEngine extends Engine
             $models->each->pushSoftDeleteMetadata();
         }
 
-        $objects = $models->map(function ($model): ?array {
+        $objects = $models->map(static function ($model): ?array {
             $searchableData = $model->toSearchableArray();
             if (empty($searchableData)) {
                 return null;
@@ -114,11 +94,9 @@ class OpenSearchEngine extends Engine
             return;
         }
 
-        $objects = $models->map(function ($model): array {
-            return [
-                'id' => $model->getScoutKey(),
-            ];
-        })->values()
+        $objects = $models->map(static fn ($model): array => [
+            'id' => $model->getScoutKey(),
+        ])->values()
             ->all();
         foreach ($objects as $object) {
             $this->document->remove($object);
@@ -130,10 +108,7 @@ class OpenSearchEngine extends Engine
         $this->document->commit($this->getAppName($searchableAs), $this->getTableName($searchableAs));
     }
 
-    /**
-     * @return mixed
-     */
-    public function search(Builder $builder)
+    public function search(Builder $builder): mixed
     {
         return $this->performSearch($builder, array_filter([
             'query' => $builder->query,
@@ -147,10 +122,8 @@ class OpenSearchEngine extends Engine
     /**
      * @param mixed $perPage
      * @param mixed $page
-     *
-     * @return mixed
      */
-    public function paginate(Builder $builder, $perPage, $page)
+    public function paginate(Builder $builder, $perPage, $page): mixed
     {
         return $this->performSearch($builder, array_filter([
             'query' => $builder->query,
@@ -163,10 +136,8 @@ class OpenSearchEngine extends Engine
 
     /**
      * @param array<string, mixed> $options
-     *
-     * @return mixed
      */
-    protected function performSearch(Builder $builder, array $options = [])
+    protected function performSearch(Builder $builder, array $options = []): mixed
     {
         if ($builder->callback !== null) {
             return \call_user_func($builder->callback, $this->search, $builder->query, $options);
@@ -196,7 +167,7 @@ class OpenSearchEngine extends Engine
         $result = $this->search->execute($searchParamsBuilder->build());
 
         /** @var array<string, mixed> $searchResult */
-        $searchResult = json_decode($result->result, true);
+        $searchResult = json_decode($result->result, true, 512, JSON_THROW_ON_ERROR);
 
         return $searchResult['result'] ?? null;
     }
@@ -216,10 +187,8 @@ class OpenSearchEngine extends Engine
     /**
      * @param array{items: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
-     *
-     * @return \Illuminate\Database\Eloquent\Collection|mixed
      */
-    public function map(Builder $builder, $results, $model)
+    public function map(Builder $builder, $results, $model): mixed
     {
         if ($results === null) {
             return $model->newCollection();
@@ -238,11 +207,8 @@ class OpenSearchEngine extends Engine
         $objectIdPositions = array_flip($objectIds);
 
         return $model->getScoutModelsByIds($builder, $objectIds)
-            ->filter(function ($model) use ($objectIds): bool {
-                return \in_array($model->getScoutKey(), $objectIds, false);
-            })->sortBy(function ($model) use ($objectIdPositions): int {
-                return $objectIdPositions[$model->getScoutKey()];
-            })->values();
+            ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
+            ->sortBy(static fn ($model): int => $objectIdPositions[$model->getScoutKey()])->values();
     }
 
     /**
@@ -250,10 +216,8 @@ class OpenSearchEngine extends Engine
      *
      * @param array{items: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
-     *
-     * @return \Illuminate\Support\LazyCollection|mixed
      */
-    public function lazyMap(Builder $builder, $results, $model)
+    public function lazyMap(Builder $builder, $results, $model): mixed
     {
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
@@ -272,19 +236,14 @@ class OpenSearchEngine extends Engine
 
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
-            ->filter(function ($model) use ($objectIds): bool {
-                return \in_array($model->getScoutKey(), $objectIds, false);
-            })->sortBy(function ($model) use ($objectIdPositions): int {
-                return $objectIdPositions[$model->getScoutKey()];
-            })->values();
+            ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
+            ->sortBy(static fn ($model): int => $objectIdPositions[$model->getScoutKey()])->values();
     }
 
     /**
      * @param array<string, mixed>|null $results
-     *
-     * @return int|mixed
      */
-    public function getTotalCount($results)
+    public function getTotalCount($results): mixed
     {
         return $results['total'] ?? 0;
     }
