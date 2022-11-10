@@ -20,11 +20,11 @@ use OpenSearch\Util\SearchParamsBuilder;
 
 class OpenSearchEngine extends Engine
 {
-    protected \OpenSearch\Client\DocumentClient $document;
+    protected DocumentClient $document;
 
-    protected \OpenSearch\Client\SearchClient $search;
+    protected SearchClient $search;
 
-    protected \OpenSearch\Client\AppClient $app;
+    protected AppClient $app;
 
     /**
      * Create a new engine instance.

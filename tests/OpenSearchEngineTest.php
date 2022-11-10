@@ -27,7 +27,7 @@ final class OpenSearchEngineTest extends TestCase
      */
     private $client;
 
-    private \Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine $openSearchEngine;
+    private OpenSearchEngine $openSearchEngine;
 
     protected function setUp(): void
     {
