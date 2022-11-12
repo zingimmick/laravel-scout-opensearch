@@ -8,7 +8,7 @@
 <a href="https://packagist.org/packages/zing/laravel-scout-opensearch"><img src="https://poser.pugx.org/zing/laravel-scout-opensearch/license" alt="License"></a>
 </p>
 
-> **Requires [PHP 7.2.0+](https://php.net/releases/)**
+> **Requires [PHP 8.0+](https://php.net/releases/)**
 
 Require Laravel Scout OpenSearch using [Composer](https://getcomposer.org):
 
