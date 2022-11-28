@@ -33,7 +33,7 @@ final class OpenSearchEngineTest extends TestCase
     {
         parent::setUp();
 
-        $this->client = Mockery::mock(OpenSearchClient::class);
+        $this->client = \Mockery::mock(OpenSearchClient::class);
         $this->openSearchEngine = new OpenSearchEngine($this->client);
         resolve(EngineManager::class)->extend('opensearch', fn (): OpenSearchEngine => $this->openSearchEngine);
     }
@@ -74,7 +74,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testUpdateWithEmpty(): void
     {
-        $model = Mockery::mock(SearchableModel::class);
+        $model = \Mockery::mock(SearchableModel::class);
         $model->shouldReceive('toSearchableArray')
             ->andReturn([])->once();
         $this->openSearchEngine->update(Collection::make([$model]));
