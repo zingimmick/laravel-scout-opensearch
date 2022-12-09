@@ -38,6 +38,10 @@ jobs:
         name: Require packages for PHP 8.1
         run: composer require orchestra/testbench:^6.23 --no-update
 
+      - if: matrix.php == '8.2'
+        name: Require packages for PHP 8.2
+        run: composer require orchestra/testbench:^6.23 nesbot/carbon:^2.62.1 --no-update
+
       - name: Install dependencies
         uses: ramsey/composer-install@v2
         with:
