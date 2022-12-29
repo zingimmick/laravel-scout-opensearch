@@ -68,7 +68,7 @@ class OpenSearchEngine extends Engine
             ->values()
             ->all();
 
-        if (! empty($objects)) {
+        if ($objects !== []) {
             foreach ($objects as $object) {
                 $this->document->add($object);
             }
