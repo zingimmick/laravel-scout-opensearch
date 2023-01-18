@@ -16,4 +16,4 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::searchableAs\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::toSearchableArray\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::unsearchable\(\).#'
-        - '#Unable to resolve the template type (.*) in call to function collect#'
+        - '#Trying to access array offset on value of type null#'
