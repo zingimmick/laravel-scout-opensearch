@@ -139,7 +139,7 @@ class OpenSearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = []): mixed
     {
-        if ($builder->callback !== null) {
+        if ($builder->callback instanceof \Closure) {
             return \call_user_func($builder->callback, $this->search, $builder->query, $options);
         }
 
