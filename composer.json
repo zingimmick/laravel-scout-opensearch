@@ -19,13 +19,17 @@
         "sort-packages": true,
         "preferred-install": "dist",
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true
         }
     },
     "require": {
         "php": "^8.0",
         "ext-json": "*",
+        "algolia/algoliasearch-client-php": "^1.27",
         "laravel/scout": "^8.5 || ^9.1 || ^10.0",
+        "meilisearch/meilisearch-php": "^1.1",
+        "opensearch-project/opensearch-php": "^2.2",
         "zing/alibabacloud-opensearch": "^3.3"
     },
     "require-dev": {

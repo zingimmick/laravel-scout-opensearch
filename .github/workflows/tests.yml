@@ -11,6 +11,14 @@ on:
 
 jobs:
   tests:
+    services:
+      search-server:
+        image: opensearchproject/opensearch
+        ports:
+          - 9200:9200
+        env:
+          discovery.type: single-node
+          plugins.security.disabled: 'true'
 
     runs-on: ubuntu-latest
     strategy:

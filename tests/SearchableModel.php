@@ -18,7 +18,7 @@ class SearchableModel extends Model
 
     public function searchableAs(): string
     {
-        return 'app.table';
+        return 'searchable-model';
     }
 
     /**
@@ -28,6 +28,8 @@ class SearchableModel extends Model
     {
         return [
             'id' => $this->getScoutKey(),
+            'name' => $this->name,
+            'is_visible' => $this->is_visible,
         ];
     }
 
