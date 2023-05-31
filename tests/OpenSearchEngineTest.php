@@ -81,6 +81,9 @@ final class OpenSearchEngineTest extends TestCase
         self::assertTrue(true);
     }
 
+    /**
+     * @return never
+     */
     public function testSearch(): void
     {
         self::markTestSkipped('Incompatible test case.');
@@ -92,6 +95,9 @@ final class OpenSearchEngineTest extends TestCase
         self::assertTrue(true);
     }
 
+    /**
+     * @return never
+     */
     public function testPaginate(): void
     {
         self::markTestSkipped('Incompatible test case.');
@@ -103,6 +109,9 @@ final class OpenSearchEngineTest extends TestCase
         self::assertIsArray($this->openSearchEngine->paginate($builder, 15, 1));
     }
 
+    /**
+     * @return never
+     */
     public function testSearchFailed(): void
     {
         self::markTestSkipped('Incompatible test case.');
@@ -147,6 +156,9 @@ final class OpenSearchEngineTest extends TestCase
         self::assertTrue(true);
     }
 
+    /**
+     * @return never
+     */
     public function testSearchableFailed(): void
     {
         self::markTestSkipped('Incompatible test case.');
@@ -216,6 +228,9 @@ final class OpenSearchEngineTest extends TestCase
             ->total());
     }
 
+    /**
+     * @return never
+     */
     public function testPaginateFailed(): void
     {
         self::markTestSkipped('Incompatible test case.');
