@@ -64,6 +64,7 @@ final class ScoutTest extends TestCase
         if (method_exists(Builder::class, 'cursor')) {
             self::assertCount(5, SearchableModel::search('test')->cursor());
         }
+
         self::assertCount(5, SearchableModel::search('test')->keys());
         SearchableModel::removeAllFromSearch();
         sleep(1);
@@ -72,6 +73,7 @@ final class ScoutTest extends TestCase
         if (method_exists(Builder::class, 'cursor')) {
             self::assertCount(0, SearchableModel::search('test')->cursor());
         }
+
         self::assertCount(0, SearchableModel::search('test')->keys());
     }
 

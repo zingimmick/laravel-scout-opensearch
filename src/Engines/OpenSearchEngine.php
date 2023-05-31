@@ -134,9 +134,10 @@ class OpenSearchEngine extends Engine
     protected function performSearch(Builder $builder, array $options = []): mixed
     {
         $index = $builder->index ?: $builder->model->searchableAs();
-        if (property_exists($builder,'options')) {
+        if (property_exists($builder, 'options')) {
             $options = array_merge($builder->options, $options);
         }
+
         if ($builder->callback instanceof \Closure) {
             return \call_user_func($builder->callback, $this->app, $builder->query, $options);
         }
