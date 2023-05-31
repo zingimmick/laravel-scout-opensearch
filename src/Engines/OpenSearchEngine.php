@@ -10,27 +10,25 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
+use Laravel\Scout\Jobs\RemoveableScoutCollection;
 use OpenSearch\Client;
 
 class OpenSearchEngine extends Engine
 {
-    protected Client $app;
-
     /**
      * Create a new engine instance.
-     *
-     * @param bool $softDelete
      */
     public function __construct(
-        /**
-         * The Algolia client.
-         */
-        protected Client $openSearchClient,
-        protected bool $softDelete = false
+        protected Client $client,
+        protected bool    $softDelete = false
     ) {
-        $this->app = $openSearchClient;
     }
 
+    /**
+     * Update the given model in the index.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $models
+     */
     public function update($models): void
     {
         if ($models->isEmpty()) {
@@ -49,9 +47,9 @@ class OpenSearchEngine extends Engine
                 return null;
             }
 
-            return array_merge([
-                'id' => $model->getScoutKey(),
-            ], $searchableData, $model->scoutMetadata());
+            return array_merge($searchableData, $model->scoutMetadata(), [
+                    'id' => $model->getScoutKey(),
+                ],);
         })->filter()
             ->values()
             ->all();
@@ -68,13 +66,18 @@ class OpenSearchEngine extends Engine
                 $data[] = $model;
             }
 
-            $this->app->bulk([
+            $this->client->bulk([
                 'index' => $model->searchableAs(),
                 'body' => $data,
             ]);
         }
     }
 
+    /**
+     * Remove the given model from the index.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $models
+     */
     public function delete($models): void
     {
         if ($models->isEmpty()) {
@@ -83,26 +86,27 @@ class OpenSearchEngine extends Engine
 
         /** @var \Illuminate\Database\Eloquent\Model $model */
         $model = $models->first();
-        $objects = $models->map(static fn ($model): array => [
-            'id' => $model->getScoutKey(),
-        ])->values()
-            ->all();
-        $data = [];
-        foreach ($objects as $object) {
-            $data[] = [
-                'delete' => [
-                    '_index' => $model->searchableAs(),
-                    '_id' => $object['id'],
-                ],
-            ];
-        }
 
-        $this->app->bulk([
+        $keys = $models instanceof RemoveableScoutCollection
+            ? $models->pluck($models->first()->getUnqualifiedScoutKeyName())
+            : $models->map->getScoutKey();
+
+        $data = $keys->map(static fn($object): array => [
+            'delete' => [
+                '_index' => $model->searchableAs(),
+                '_id' => $object,
+            ],
+        ])->all();
+
+        $this->client->bulk([
             'index' => $model->searchableAs(),
             'body' => $data,
         ]);
     }
 
+    /**
+     * Perform the given search on the engine.
+     */
     public function search(Builder $builder): mixed
     {
         return $this->performSearch($builder, array_filter([
@@ -111,19 +115,21 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param mixed $perPage
-     * @param mixed $page
+     * Perform the given search on the engine.
+     *
+     * @param int $perPage
+     * @param int $page
      */
     public function paginate(Builder $builder, $perPage, $page): mixed
     {
-        return $this->performSearch($builder, array_filter([
+        return $this->performSearch($builder, [
             'size' => $perPage,
             'from' => $perPage * ($page - 1),
-        ]));
+        ]);
     }
 
     /**
-     * @param array<string, mixed> $options
+     * Perform the given search on the engine.
      */
     protected function performSearch(Builder $builder, array $options = []): mixed
     {
@@ -133,7 +139,7 @@ class OpenSearchEngine extends Engine
         }
 
         if ($builder->callback instanceof \Closure) {
-            return \call_user_func($builder->callback, $this->app, $builder->query, $options);
+            return \call_user_func($builder->callback, $this->client, $builder->query, $options);
         }
 
         $query = $builder->query;
@@ -153,7 +159,7 @@ class OpenSearchEngine extends Engine
                 ],
             ],
         ]));
-        $result = $this->app->search([
+        $result = $this->client->search([
             'index' => $index,
             'body' => $options,
         ]);
@@ -161,7 +167,10 @@ class OpenSearchEngine extends Engine
         return $result['hits'] ?? null;
     }
 
+
     /**
+     * Pluck and return the primary keys of the given results.
+     *
      * @param array{hits: mixed[]|null}|null $results
      */
     public function mapIds($results): Collection
@@ -174,8 +183,12 @@ class OpenSearchEngine extends Engine
     }
 
     /**
+     * Map the given results to instances of the given model.
+     *
      * @param array{hits: mixed[]|null}|null $results
-     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param Model $model
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function map(Builder $builder, $results, $model): mixed
     {
@@ -195,7 +208,10 @@ class OpenSearchEngine extends Engine
 
         $objectIdPositions = array_flip($objectIds);
 
-        return $model->getScoutModelsByIds($builder, $objectIds)
+        return $model->getScoutModelsByIds(
+            $builder,
+            $objectIds
+        )
             ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
             ->sortBy(static fn ($model): int => $objectIdPositions[$model->getScoutKey()])->values();
     }
@@ -204,9 +220,11 @@ class OpenSearchEngine extends Engine
      * Map the given results to instances of the given model via a lazy collection.
      *
      * @param array{hits: mixed[]|null}|null $results
-     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param Model $model
+     *
+     * @return LazyCollection
      */
-    public function lazyMap(Builder $builder, $results, $model): mixed
+    public function lazyMap(Builder $builder, $results, $model): LazyCollection
     {
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
@@ -230,13 +248,22 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param array<string, mixed>|null $results
+     * Get the total count from a raw result returned by the engine.
+     *
+     * @param mixed $results
+     *
+     * @return int
      */
-    public function getTotalCount($results): mixed
+    public function getTotalCount($results):int
     {
         return $results['total']['value'] ?? 0;
     }
 
+    /**
+     * Flush all of the model's records from the engine.
+     *
+     * @param Model $model
+     */
     public function flush($model): void
     {
         $model->newQuery()
@@ -249,10 +276,12 @@ class OpenSearchEngine extends Engine
      *
      * @param string $name
      * @param array<string, mixed> $options
+     *
+     * @return mixed
      */
     public function createIndex($name, array $options = []): array
     {
-        return $this->openSearchClient->indices()
+        return $this->client->indices()
             ->create([
                 'index' => $name,
                 'body' => $options,
@@ -263,10 +292,12 @@ class OpenSearchEngine extends Engine
      * Delete a search index.
      *
      * @param string $name
+     *
+     * @return mixed
      */
     public function deleteIndex($name): array
     {
-        return $this->app->indices()
+        return $this->client->indices()
             ->delete([
                 'index' => $name,
             ]);
@@ -278,5 +309,18 @@ class OpenSearchEngine extends Engine
     protected function usesSoftDelete(Model $model): bool
     {
         return \in_array(SoftDeletes::class, class_uses_recursive($model), true);
+    }
+
+    /**
+     * Dynamically call the OpenSearch client instance.
+     *
+     * @param string $method
+     * @param array $parameters
+     *
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        return $this->client->{$method}(...$parameters);
     }
 }
