@@ -11,15 +11,9 @@ use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use OpenSearch\Client;
-use OpenSearch\Client\DocumentClient;
-use OpenSearch\Client\SearchClient;
 
 class OpenSearchEngine extends Engine
 {
-    protected DocumentClient $document;
-
-    protected SearchClient $search;
-
     protected Client $app;
 
     /**
@@ -32,7 +26,7 @@ class OpenSearchEngine extends Engine
          * The Algolia client.
          */
         protected Client $openSearchClient,
-        protected $softDelete = false
+        protected bool $softDelete = false
     ) {
         $this->app = $openSearchClient;
     }
