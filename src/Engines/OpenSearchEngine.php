@@ -130,6 +130,8 @@ class OpenSearchEngine extends Engine
 
     /**
      * Perform the given search on the engine.
+     *
+     * @param array<string, mixed> $options
      */
     protected function performSearch(Builder $builder, array $options = []): mixed
     {
@@ -277,7 +279,7 @@ class OpenSearchEngine extends Engine
      * @param string $name
      * @param array<string, mixed> $options
      *
-     * @return mixed
+     * @return array{acknowledged: bool, shards_acknowledged: bool, index: string}
      */
     public function createIndex($name, array $options = []): array
     {
@@ -293,7 +295,7 @@ class OpenSearchEngine extends Engine
      *
      * @param string $name
      *
-     * @return mixed
+     * @return array{acknowledged: bool}
      */
     public function deleteIndex($name): array
     {
@@ -315,7 +317,7 @@ class OpenSearchEngine extends Engine
      * Dynamically call the OpenSearch client instance.
      *
      * @param string $method
-     * @param array $parameters
+     * @param array<int, mixed> $parameters
      *
      * @return mixed
      */

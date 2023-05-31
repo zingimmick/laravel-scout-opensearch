@@ -57,10 +57,10 @@ final class ScoutTest extends TestCase
         ]);
         sleep(1);
         self::assertCount(6, SearchableModel::search('test')->get());
-        SearchableModel::query()->first()->delete();
+        SearchableModel::query()->firstOrFail()->delete();
         sleep(1);
         self::assertCount(5, SearchableModel::search('test')->get());
-        self::assertCount(1, SearchableModel::search('test')->paginate(2, 'page', 3));
+        self::assertCount(1, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
             self::assertCount(5, SearchableModel::search('test')->cursor());
         }
@@ -69,7 +69,7 @@ final class ScoutTest extends TestCase
         SearchableModel::removeAllFromSearch();
         sleep(1);
         self::assertCount(0, SearchableModel::search('test')->get());
-        self::assertCount(0, SearchableModel::search('test')->paginate(2, 'page', 3));
+        self::assertCount(0, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
             self::assertCount(0, SearchableModel::search('test')->cursor());
         }
