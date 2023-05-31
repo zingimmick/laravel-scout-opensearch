@@ -38,5 +38,5 @@ class SearchableModel extends Model
     /**
      * @var string[]
      */
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'is_visible'];
 }

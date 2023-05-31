@@ -93,4 +93,16 @@ final class ScoutTest extends TestCase
         self::assertSame(1, SearchableModel::search('test')->orderBy('id')->first()->getKey());
         self::assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
     }
+
+    public function testWhere()
+    {
+        SearchableModel::query()->create(['name' => 'test','is_visible' => 1]);
+        SearchableModel::query()->create(['name' => 'test', 'is_visible' => 1]);
+        SearchableModel::query()->create(['name' => 'test','is_visible' => 0]);
+        SearchableModel::query()->create(['name' => 'nothing']);
+        sleep(1);
+        self::assertCount(3,SearchableModel::search('test')->get());
+        self::assertCount(2,SearchableModel::search('test')->where('is_visible',1)->get());
+        self::assertCount(3,SearchableModel::search('test')->whereIn('is_visible',[0,1])->get());
+    }
 }

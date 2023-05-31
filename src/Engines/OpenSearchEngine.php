@@ -63,7 +63,7 @@ class OpenSearchEngine extends Engine
                         '_id' => $object['id'],
                     ],
                 ];
-                $data[] = $model;
+                $data[] = $object;
             }
 
             $this->client->bulk([
@@ -150,11 +150,31 @@ class OpenSearchEngine extends Engine
                 'query' => $query,
             ],
         ];
+        $filter = collect($builder->wheres)->map(function ($value, $key) {
+            return [
+                "term"=>[$key=>$value]
+            ];
+        })->values();
+
+        $filter=$filter->merge(collect($builder->whereIns)->map(function ($values, $key) {
+            return [
+                "terms"=>[$key=>$values]
+            ];
+        })->values())->values();
+        if ($filter->isNotEmpty()){
+            $options['query']=[
+              'bool'=>[
+                  'filter'=>$filter->all(),
+                  'must'=>[$options['query']]
+              ]
+            ];
+        }
+
         $options['sort'] = collect($builder->orders)->map(static fn ($order): array => [
             $order['column'] => [
                 'order' => $order['direction'],
             ],
-        ])->whenEmpty(static fn (): \Illuminate\Support\Collection => collect([
+        ])->whenEmpty(static fn (): Collection => collect([
             [
                 'id' => [
                     'order' => 'desc',
