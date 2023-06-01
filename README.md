@@ -22,12 +22,9 @@ composer require zing/laravel-scout-opensearch
 return [
     // ...
     'opensearch' => [
-        "access_key" => env('OPENSEARCH_ACCESS_KEY', 'your-opensearch-access-key'),
-        "secret" => env('OPENSEARCH_SECRET', 'your-opensearch-secret'),
-        "host" => env('OPENSEARCH_HOST', 'your-opensearch-host'),
-        "options" => [
-            "debug" => env('OPENSEARCH_DEBUG', false),
-        ],
+        'hosts' => [env('OPENSEARCH_HOST', 'localhost:9200')],
+        'basicAuthentication' => [env('OPENSEARCH_USERNAME', 'admin'), env('OPENSEARCH_PASSWORD', 'admin')],
+        'retries' => env('OPENSEARCH_RETRYS', 2),
     ],
 ];
 ```
@@ -41,7 +38,7 @@ class SearchableModel extends Model
 
     public function searchableAs(): string
     {
-        return '{{APP_NAME}}.{{TABLE_NAME}}';
+        return 'searchable_models_index';
     }
 
     /**
