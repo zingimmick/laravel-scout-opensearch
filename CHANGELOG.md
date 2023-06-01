@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.0.0 - 2023-06-01
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Other Changes
+
+- Migrate from Alibaba Cloud OpenSearch to OpenSearch by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/57
+
+**Full Changelog**: https://github.com/zingimmick/laravel-scout-opensearch/compare/2.2.0...3.0.0
+
 ## 2.2.0 - 2023-03-17
 
 <!-- Release notes generated using configuration in .github/release.yml at 2.x -->
