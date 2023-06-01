@@ -11,6 +11,7 @@ use Laravel\Scout\Searchable;
 /**
  * @property string $name
  * @property int $is_visible
+ *
  * @method static static|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder query()
  */
 class SearchableModel extends Model

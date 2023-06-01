@@ -20,7 +20,7 @@ class OpenSearchEngine extends Engine
      */
     public function __construct(
         protected Client $client,
-        protected bool    $softDelete = false
+        protected bool $softDelete = false
     ) {
     }
 
@@ -35,7 +35,7 @@ class OpenSearchEngine extends Engine
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model $model */
+        /** @var \Illuminate\Database\Eloquent\Model $model First model for search index */
         $model = $models->first();
         if ($this->usesSoftDelete($model) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
@@ -48,8 +48,8 @@ class OpenSearchEngine extends Engine
             }
 
             return array_merge($searchableData, $model->scoutMetadata(), [
-                    'id' => $model->getScoutKey(),
-                ],);
+                'id' => $model->getScoutKey(),
+            ]);
         })->filter()
             ->values()
             ->all();
@@ -88,10 +88,10 @@ class OpenSearchEngine extends Engine
         $model = $models->first();
 
         $keys = $models instanceof RemoveableScoutCollection
-            ? $models->pluck($models->first()->getUnqualifiedScoutKeyName())
+            ? $models->pluck($models->first()->getScoutKeyName())
             : $models->map->getScoutKey();
 
-        $data = $keys->map(static fn($object): array => [
+        $data = $keys->map(static fn ($object): array => [
             'delete' => [
                 '_index' => $model->searchableAs(),
                 '_id' => $object,
@@ -150,23 +150,26 @@ class OpenSearchEngine extends Engine
                 'query' => $query,
             ],
         ];
-        $filter = collect($builder->wheres)->map(function ($value, $key) {
-            return [
-                "term"=>[$key=>$value]
-            ];
-        })->values();
+        $filter = collect($builder->wheres)
+            ->map(static fn ($value, $key): array => [
+                'term' => [
+                    $key => $value,
+                ],
+            ])->values();
 
-        $filter=$filter->merge(collect($builder->whereIns)->map(function ($values, $key) {
-            return [
-                "terms"=>[$key=>$values]
-            ];
-        })->values())->values();
-        if ($filter->isNotEmpty()){
-            $options['query']=[
-              'bool'=>[
-                  'filter'=>$filter->all(),
-                  'must'=>[$options['query']]
-              ]
+        if (property_exists($builder, 'whereIns')) {
+            $filter = $filter->merge(collect($builder->whereIns)->map(static fn($values, $key): array => [
+                'terms' => [
+                    $key => $values,
+                ],
+            ])->values())->values();
+        }
+        if ($filter->isNotEmpty()) {
+            $options['query'] = [
+                'bool' => [
+                    'filter' => $filter->all(),
+                    'must' => [$options['query']],
+                ],
             ];
         }
 
@@ -180,7 +183,8 @@ class OpenSearchEngine extends Engine
                     'order' => 'desc',
                 ],
             ],
-        ]));
+        ]))->all();
+
         $result = $this->client->search([
             'index' => $index,
             'body' => $options,
@@ -188,7 +192,6 @@ class OpenSearchEngine extends Engine
 
         return $result['hits'] ?? null;
     }
-
 
     /**
      * Pluck and return the primary keys of the given results.
@@ -208,7 +211,7 @@ class OpenSearchEngine extends Engine
      * Map the given results to instances of the given model.
      *
      * @param array{hits: mixed[]|null}|null $results
-     * @param Model $model
+     * @param \Illuminate\Database\Eloquent\Model $model
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -230,10 +233,7 @@ class OpenSearchEngine extends Engine
 
         $objectIdPositions = array_flip($objectIds);
 
-        return $model->getScoutModelsByIds(
-            $builder,
-            $objectIds
-        )
+        return $model->getScoutModelsByIds($builder, $objectIds)
             ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
             ->sortBy(static fn ($model): int => $objectIdPositions[$model->getScoutKey()])->values();
     }
@@ -242,9 +242,7 @@ class OpenSearchEngine extends Engine
      * Map the given results to instances of the given model via a lazy collection.
      *
      * @param array{hits: mixed[]|null}|null $results
-     * @param Model $model
-     *
-     * @return LazyCollection
+     * @param \Illuminate\Database\Eloquent\Model $model
      */
     public function lazyMap(Builder $builder, $results, $model): LazyCollection
     {
@@ -273,10 +271,8 @@ class OpenSearchEngine extends Engine
      * Get the total count from a raw result returned by the engine.
      *
      * @param mixed $results
-     *
-     * @return int
      */
-    public function getTotalCount($results):int
+    public function getTotalCount($results): int
     {
         return $results['total']['value'] ?? 0;
     }
@@ -284,7 +280,7 @@ class OpenSearchEngine extends Engine
     /**
      * Flush all of the model's records from the engine.
      *
-     * @param Model $model
+     * @param \Illuminate\Database\Eloquent\Model $model
      */
     public function flush($model): void
     {

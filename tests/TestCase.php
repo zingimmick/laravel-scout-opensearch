@@ -58,7 +58,6 @@ abstract class TestCase extends BaseTestCase
             'hosts' => ['localhost:9200'],
             'retries' => 2,
             'handler' => ClientBuilder::multiHandler(),
-            'logger' => new Logger('test', [new RotatingFileHandler('test')]),
             'basicAuthentication' => ['admin', 'admin'],
             'sslVerification' => false,
         ]);
