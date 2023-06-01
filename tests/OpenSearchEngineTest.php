@@ -14,7 +14,6 @@ use Laravel\Scout\EngineManager;
 use Laravel\Scout\Jobs\RemoveFromSearch;
 use Mockery as m;
 use OpenSearch\Client;
-use OpenSearch\ClientBuilder;
 use Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\CustomKeySearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\EmptySearchableModel;
@@ -572,19 +571,23 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testFlushAModelWithACustomAlgoliaKey(): void
     {
-        $builder = m::mock(Builder::class);
-        $builder->shouldReceive('unsearchable')
-            ->once()
-            ->withNoArgs();
         $model = m::mock(CustomKeySearchableModel::class);
-        $model->shouldReceive('getKeyName')
+        $model->shouldReceive('searchableAs')
+            ->once()
             ->withNoArgs()
             ->andReturn('table');
-        $model->shouldReceive('newQuery->orderBy')
-            ->with('table')
-            ->andReturn($builder);
-
-        $engine = new OpenSearchEngine(ClientBuilder::fromConfig([]));
+        $client = m::mock(Client::class);
+        $client->shouldReceive('deleteByQuery')
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'match_all' => new \stdClass(),
+                    ],
+                ],
+            ])
+            ->andReturn('table');
+        $engine = new OpenSearchEngine($client);
         $engine->flush($model);
     }
 
