@@ -8,8 +8,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\ScoutServiceProvider;
-use Monolog\Handler\RotatingFileHandler;
-use Monolog\Logger;
 use OpenSearch\ClientBuilder;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Zing\LaravelScout\OpenSearch\OpenSearchServiceProvider;

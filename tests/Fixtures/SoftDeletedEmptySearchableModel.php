@@ -6,13 +6,12 @@ namespace Zing\LaravelScout\OpenSearch\Tests\Fixtures;
 
 class SoftDeletedEmptySearchableModel extends SearchableModel
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toSearchableArray(): array
     {
         return [];
-    }
-
-    public function pushSoftDeleteMetadata(): void
-    {
     }
 
     /**

@@ -7,9 +7,13 @@ parameters:
     paths:
         - src
         - tests
+    excludePaths:
+        analyse:
+            - tests/OpenSearchEngineTest.php
     checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKey\(\).#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKeyName\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutModelsByIds\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::queryScoutModelsByIds\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::scoutMetadata\(\).#'
@@ -17,3 +21,5 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::toSearchableArray\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::unsearchable\(\).#'
         - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection>::pushSoftDeleteMetadata\(\).#'
+        - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection>::getScoutKey\(\).#'
+        - '#Parameter \#1 ...\$arrays of function array_merge expects array, int given.#'

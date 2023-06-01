@@ -88,7 +88,7 @@ class OpenSearchEngine extends Engine
         $model = $models->first();
 
         $keys = $models instanceof RemoveableScoutCollection
-            ? $models->pluck($models->first()->getScoutKeyName())
+            ? $models->pluck($model->getScoutKeyName())
             : $models->map->getScoutKey();
 
         $data = $keys->map(static fn ($object): array => [
@@ -158,12 +158,13 @@ class OpenSearchEngine extends Engine
             ])->values();
 
         if (property_exists($builder, 'whereIns')) {
-            $filter = $filter->merge(collect($builder->whereIns)->map(static fn($values, $key): array => [
+            $filter = $filter->merge(collect($builder->whereIns)->map(static fn ($values, $key): array => [
                 'terms' => [
                     $key => $values,
                 ],
             ])->values())->values();
         }
+
         if ($filter->isNotEmpty()) {
             $options['query'] = [
                 'bool' => [
@@ -296,6 +297,8 @@ class OpenSearchEngine extends Engine
      * @param array<string, mixed> $options
      *
      * @return array{acknowledged: bool, shards_acknowledged: bool, index: string}
+     *
+     * @phpstan-return array<string, mixed>
      */
     public function createIndex($name, array $options = []): array
     {
@@ -312,6 +315,8 @@ class OpenSearchEngine extends Engine
      * @param string $name
      *
      * @return array{acknowledged: bool}
+     *
+     * @phpstan-return array<string, mixed>
      */
     public function deleteIndex($name): array
     {

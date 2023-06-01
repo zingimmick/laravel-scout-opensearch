@@ -317,7 +317,7 @@ final class OpenSearchEngineTest extends TestCase
         $client = m::mock(Client::class);
         $engine = new OpenSearchEngine($client);
 
-        $model = m::mock(\stdClass::class);
+        $model = m::mock(SearchableModel::class);
         $model->shouldReceive('getScoutModelsByIds')
             ->andReturn($models = Collection::make([
                 new SearchableModel([
@@ -345,7 +345,7 @@ final class OpenSearchEngineTest extends TestCase
         $client = m::mock(Client::class);
         $engine = new OpenSearchEngine($client);
 
-        $model = m::mock(\stdClass::class);
+        $model = m::mock(SearchableModel::class);
         $model->shouldReceive('getScoutModelsByIds')
             ->andReturn($models = Collection::make([
                 new SearchableModel([
@@ -411,7 +411,7 @@ final class OpenSearchEngineTest extends TestCase
         $client = m::mock(Client::class);
         $engine = new OpenSearchEngine($client);
 
-        $model = m::mock(\stdClass::class);
+        $model = m::mock(SearchableModel::class);
         $model->shouldReceive('queryScoutModelsByIds->cursor')
             ->andReturn($models = LazyCollection::make([
                 new SearchableModel([
@@ -439,7 +439,7 @@ final class OpenSearchEngineTest extends TestCase
         $client = m::mock(Client::class);
         $engine = new OpenSearchEngine($client);
 
-        $model = m::mock(\stdClass::class);
+        $model = m::mock(SearchableModel::class);
         $model->shouldReceive('queryScoutModelsByIds->cursor')
             ->andReturn($models = LazyCollection::make([
                 new SearchableModel([
