@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Zing\LaravelScout\OpenSearch\Tests;
 
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
 use Laravel\Scout\EngineManager;
-use Mockery;
-use OpenSearch\Client\OpenSearchClient;
-use OpenSearch\Client\SearchClient;
-use OpenSearch\Generated\Common\OpenSearchResult;
-use OpenSearch\Util\SearchParamsBuilder;
+use Laravel\Scout\Jobs\RemoveFromSearch;
+use Mockery as m;
+use OpenSearch\Client;
+use OpenSearch\ClientBuilder;
 use Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\CustomKeySearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\EmptySearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SoftDeletedEmptySearchableModel;
 
 /**
  * @internal
@@ -22,873 +28,580 @@ final class OpenSearchEngineTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /**
-     * @var \Mockery\MockInterface&\OpenSearch\Client\OpenSearchClient
-     */
-    private $client;
-
-    private OpenSearchEngine $openSearchEngine;
-
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->client = \Mockery::mock(OpenSearchClient::class);
-        $this->openSearchEngine = new OpenSearchEngine($this->client);
-        resolve(EngineManager::class)->extend('opensearch', fn (): OpenSearchEngine => $this->openSearchEngine);
+        Config::shouldReceive('get')->with('scout.after_commit', m::any())->andReturn(false);
+        Config::shouldReceive('get')->with('scout.soft_delete', m::any())->andReturn(false);
     }
 
-    public function testUpdate(): void
+    public function testUpdateAddsObjectsToIndex(): void
     {
-        $this->client->shouldReceive('post')
-            ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $this->openSearchEngine->update((new SearchableModel())->newCollection());
-        $this->openSearchEngine->update(Collection::make([new SearchableModel()]));
-    }
-
-    public function testUpdateWithSoftDelete(): void
-    {
-        $this->client->shouldReceive('post')
-            ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $openSearchEngine = new OpenSearchEngine($this->client, true);
-        $openSearchEngine->update(Collection::make([new SearchableModel()]));
-    }
-
-    public function testUpdateWithEmpty(): void
-    {
-        $model = \Mockery::mock(SearchableModel::class);
-        $model->shouldReceive('toSearchableArray')
-            ->andReturn([])->once();
-        $this->openSearchEngine->update(Collection::make([$model]));
-    }
-
-    public function testDelete(): void
-    {
-        $this->client->shouldReceive('post')
-            ->withArgs(['/apps/app/table/actions/bulk', new Mockery\Matcher\AnyArgs()])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $this->openSearchEngine->delete((new SearchableModel())->newCollection());
-        $this->openSearchEngine->delete(Collection::make([new SearchableModel()]));
-    }
-
-    public function testSearch(): void
-    {
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "status": "OK",
-    "request_id": "155310917017444091100003",
-    "result": {
-        "searchtime": 0.031081,
-        "total": 1,
-        "num": 1,
-        "viewtotal": 1,
-        "compute_cost": [
-            {
-                "index_name": "84922",
-                "value": 0.292
-            }
-        ],
-        "items": [
-            {
-                "fields": {
-                    "id": "10",
-                    "name": "我是一条新<em>文档</em>的标题",
-                    "phone": "18312345678",
-                    "index_name": "app_schema_demo"
-                },
-                "property": {},
-                "attribute": {},
-                "variableValue": {},
-               "sortExprValues": [
-                    "10",
-                    "10000.1354238242"
-                ]
-            }
-        ],
-        "facet": []
-    },
-    "qp": [
-        {
-            "app_name": "84922",
-            "query_correction_info": [
-                {
-                    "index": "default",
-                    "original_query": "平果手机充电器",
-                    "corrected_query": "苹果手机充电器",
-                    "correction_level": 1,
-                    "processor_name": "spell_check"
-                }
-            ]
-        }
-    ],
-    "errors": [],
-    "tracer": "",
-    "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-}',
-            ]));
-        $builder = new Builder(new SearchableModel(), 'zonda');
-        $builder->where('foo', 1);
-        $builder->orderBy('id', 'desc');
-
-        $this->openSearchEngine->search($builder);
-    }
-
-    public function testPaginate(): void
-    {
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "status": "OK",
-    "request_id": "155310917017444091100003",
-    "result": {
-        "searchtime": 0.031081,
-        "total": 1,
-        "num": 1,
-        "viewtotal": 1,
-        "compute_cost": [
-            {
-                "index_name": "84922",
-                "value": 0.292
-            }
-        ],
-        "items": [
-            {
-                "fields": {
-                    "id": "10",
-                    "name": "我是一条新<em>文档</em>的标题",
-                    "phone": "18312345678",
-                    "index_name": "app_schema_demo"
-                },
-                "property": {},
-                "attribute": {},
-                "variableValue": {},
-               "sortExprValues": [
-                    "10",
-                    "10000.1354238242"
-                ]
-            }
-        ],
-        "facet": []
-    },
-    "qp": [
-        {
-            "app_name": "84922",
-            "query_correction_info": [
-                {
-                    "index": "default",
-                    "original_query": "平果手机充电器",
-                    "corrected_query": "苹果手机充电器",
-                    "correction_level": 1,
-                    "processor_name": "spell_check"
-                }
-            ]
-        }
-    ],
-    "errors": [],
-    "tracer": "",
-    "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-}',
-            ]));
-        $builder = new Builder(new SearchableModel(), 'zonda');
-        $builder->where('foo', 1);
-        $builder->orderBy('id', 'desc');
-        $builder->orderBy('rank');
-
-        self::assertIsArray($this->openSearchEngine->paginate($builder, 15, 1));
-    }
-
-    public function testSearchFailed(): void
-    {
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [
-        {
-            "code": 2001,
-            "message": "待查应用不存在.待查应用不存在。",
-            "params": {
-                "friendly_message": "待查应用不存在。"
-            }
-        }
-    ],
-    "request_id": "150116732819940316116461",
-    "status": "FAIL"
-}',
-            ]));
-        $builder = new Builder(new SearchableModel(), 'zonda');
-        $builder->where('foo', 1);
-        $builder->orderBy('id', 'desc');
-
-        self::assertNull($this->openSearchEngine->search($builder));
-    }
-
-    public function testCallback(): void
-    {
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "status": "OK",
-    "request_id": "155310917017444091100003",
-    "result": {
-        "searchtime": 0.031081,
-        "total": 1,
-        "num": 1,
-        "viewtotal": 1,
-        "compute_cost": [
-            {
-                "index_name": "84922",
-                "value": 0.292
-            }
-        ],
-        "items": [
-            {
-                "fields": {
-                    "id": "10",
-                    "name": "我是一条新<em>文档</em>的标题",
-                    "phone": "18312345678",
-                    "index_name": "app_schema_demo"
-                },
-                "property": {},
-                "attribute": {},
-                "variableValue": {},
-               "sortExprValues": [
-                    "10",
-                    "10000.1354238242"
-                ]
-            }
-        ],
-        "facet": []
-    },
-    "qp": [
-        {
-            "app_name": "84922",
-            "query_correction_info": [
-                {
-                    "index": "default",
-                    "original_query": "平果手机充电器",
-                    "corrected_query": "苹果手机充电器",
-                    "correction_level": 1,
-                    "processor_name": "spell_check"
-                }
-            ]
-        }
-    ],
-    "errors": [],
-    "tracer": "",
-    "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-}',
-            ]));
-        $builder = new Builder(
-            new SearchableModel(),
-            'huayra',
-            function (SearchClient $client, $query, $params): OpenSearchResult {
-                $this->assertNotEmpty($params);
-                $this->assertSame('huayra', $query);
-
-                return $client->execute((new SearchParamsBuilder())->build());
-            }
-        );
-        $this->openSearchEngine->search($builder);
-    }
-
-    public function testCreateIndex(): void
-    {
-        $this->client->shouldReceive('post')
-            ->withArgs(['/apps', 'test'])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $this->openSearchEngine->createIndex('test');
-    }
-
-    public function testDeleteIndex(): void
-    {
-        $this->client->shouldReceive('delete')
-            ->withArgs(['/apps/test'])
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $this->openSearchEngine->deleteIndex('test');
-    }
-
-    public function testSeachable(): void
-    {
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $model = SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $result = <<<CODE_SAMPLE
-            {
-                "status": "OK",
-                "request_id": "155310917017444091100003",
-                "result": {
-                    "searchtime": 0.031081,
-                    "total": 1,
-                    "num": 1,
-                    "viewtotal": 1,
-                    "compute_cost": [
-                        {
-                            "index_name": "84922",
-                            "value": 0.292
-                        }
-                    ],
-                    "items": [
-                        {
-                            "fields": {
-                                "id": "{$model->getKey()}",
-                                "name": "我是一条新<em>文档</em>的标题",
-                                "phone": "18312345678",
-                                "index_name": "app_schema_demo"
-                            },
-                            "property": {},
-                            "attribute": {},
-                            "variableValue": {},
-                           "sortExprValues": [
-                                "10",
-                                "10000.1354238242"
-                            ]
-                        }
-                    ],
-                    "facet": []
-                },
-                "qp": [
-                    {
-                        "app_name": "84922",
-                        "query_correction_info": [
-                            {
-                                "index": "default",
-                                "original_query": "平果手机充电器",
-                                "corrected_query": "苹果手机充电器",
-                                "correction_level": 1,
-                                "processor_name": "spell_check"
-                            }
-                        ]
-                    }
-                ],
-                "errors": [],
-                "tracer": "",
-                "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-            }
-            CODE_SAMPLE;
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-
-        self::assertCount(1, SearchableModel::search('test')->get());
-    }
-
-    public function testSeachableFailed(): void
-    {
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $jsonData = [
-            'errors' => [
-                [
-                    'code' => 2001,
-                    'message' => '待查应用不存在.待查应用不存在。',
-                    'params' => [
-                        'friendly_message' => '待查应用不存在。',
-                    ],
-                ],
-            ],
-            'request_id' => '150116732819940316116461',
-            'status' => 'FAIL',
-        ];
-        $result = json_encode($jsonData);
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-
-        self::assertCount(0, SearchableModel::search('test')->get());
-    }
-
-    public function testSearchEmpty(): void
-    {
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $jsonData = [
-            'status' => 'OK',
-            'request_id' => '155310917017444091100003',
-            'result' => [
-                'searchtime' => 0.031081,
-                'total' => 1,
-                'num' => 1,
-                'viewtotal' => 1,
-                'compute_cost' => [
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
                     [
-                        'index_name' => '84922',
-                        'value' => 0.292,
+                        'index' => [
+                            '_index' => 'table',
+                            '_id' => 1,
+                        ],
+                    ],
+                    [
+                        'id' => 1,
                     ],
                 ],
-                'items' => [],
-                'facet' => [],
-            ],
-            'qp' => [
-                [
-                    'app_name' => '84922',
-                    'query_correction_info' => [
-                        [
-                            'index' => 'default',
-                            'original_query' => '平果手机充电器',
-                            'corrected_query' => '苹果手机充电器',
-                            'correction_level' => 1,
-                            'processor_name' => 'spell_check',
+            ]);
+
+        $engine = new OpenSearchEngine($client);
+        $engine->update(Collection::make([
+            new SearchableModel([
+                'id' => 1,
+            ]),
+        ]));
+    }
+
+    public function testDeleteRemovesObjectsToIndex(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    [
+                        'delete' => [
+                            '_index' => 'table',
+                            '_id' => 1,
                         ],
                     ],
                 ],
-            ],
-            'errors' => [],
-            'tracer' => '',
+            ]);
 
-            'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
-        ];
-        $result = json_encode($jsonData);
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        self::assertCount(0, SearchableModel::search('test')->get());
+        $engine = new OpenSearchEngine($client);
+        $engine->delete(Collection::make([
+            new SearchableModel([
+                'id' => 1,
+            ]),
+        ]));
     }
 
-    public function testCursor(): void
+    public function testDeleteRemovesObjectsToIndexWithACustomSearchKey(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    [
+                        'delete' => [
+                            '_index' => 'table',
+                            '_id' => 'my-opensearch-key.5',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $engine = new OpenSearchEngine($client);
+        $engine->delete(Collection::make([
+            new CustomKeySearchableModel([
+                'id' => 5,
+            ]),
+        ]));
+    }
+
+    public function testDeleteWithRemoveableScoutCollectionUsingCustomSearchKey(): void
+    {
+        if (! class_exists(RemoveFromSearch::class)) {
+            self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
+        }
+        $job = new RemoveFromSearch(Collection::make([
+            new CustomKeySearchableModel([
+                'id' => 5,
+            ]),
+        ]));
+
+        $job = unserialize(serialize($job));
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    [
+                        'delete' => [
+                            '_index' => 'table',
+                            '_id' => 'my-opensearch-key.5',
+                        ],
+                    ],
+                ],
+            ]);
+        $engine = new OpenSearchEngine($client);
+        $engine->delete($job->models);
+    }
+
+    public function testRemoveFromSearchJobUsesCustomSearchKey(): void
+    {
+        if (! class_exists(RemoveFromSearch::class)) {
+            self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
+        }
+        $job = new RemoveFromSearch(Collection::make([
+            new CustomKeySearchableModel([
+                'id' => 5,
+            ]),
+        ]));
+
+        $job = unserialize(serialize($job));
+
+        Container::getInstance()->bind(EngineManager::class, function () {
+            $engine = m::mock(OpenSearchEngine::class);
+
+            $engine->shouldReceive('delete')
+                ->once()
+                ->with(m::on(function ($collection) {
+                    $keyName = ($model = $collection->first())
+                        ->getScoutKeyName();
+
+                    return $model->getAttributes()[$keyName] === 'my-opensearch-key.5';
+                }));
+
+            $manager = m::mock(EngineManager::class);
+
+            $manager->shouldReceive('engine')
+                ->once()
+                ->andReturn($engine);
+
+            return $manager;
+        });
+
+        $job->handle();
+    }
+
+    public function testSearchSendsCorrectParametersToAlgolia(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'filter' => [
+                                [
+                                    'term' => [
+                                        'foo' => 1,
+                                    ],
+                                ],
+                            ],
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'sort' => [
+                        [
+                            'id' => [
+                                'order' => 'desc',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $engine = new OpenSearchEngine($client);
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('foo', 1);
+        $engine->search($builder);
+    }
+
+    public function testSearchSendsCorrectParametersToAlgoliaForWhereInSearch(): void
+    {
+        if (! method_exists(Builder::class, 'whereIn')) {
+            self::markTestSkipped('Support for whereIn available since 9.0.');
+        }
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'filter' => [
+                                [
+                                    'term' => [
+                                        'foo' => 1,
+                                    ],
+                                ],
+                                [
+                                    'terms' => [
+                                        'bar' => [1, 2],
+                                    ],
+                                ],
+                            ],
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'sort' => [
+                        [
+                            'id' => [
+                                'order' => 'desc',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $engine = new OpenSearchEngine($client);
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('foo', 1)
+            ->whereIn('bar', [1, 2]);
+        $engine->search($builder);
+    }
+
+    public function testSearchSendsCorrectParametersToAlgoliaForEmptyWhereInSearch(): void
+    {
+        if (! method_exists(Builder::class, 'whereIn')) {
+            self::markTestSkipped('Support for whereIn available since 9.0.');
+        }
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'filter' => [
+                                [
+                                    'term' => [
+                                        'foo' => 1,
+                                    ],
+                                ],
+                                [
+                                    'terms' => [
+                                        'bar' => [],
+                                    ],
+                                ],
+                            ],
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'sort' => [
+                        [
+                            'id' => [
+                                'order' => 'desc',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $engine = new OpenSearchEngine($client);
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('foo', 1)
+            ->whereIn('bar', []);
+        $engine->search($builder);
+    }
+
+    public function testMapCorrectlyMapsResultsToModels(): void
+    {
+        $client = m::mock(Client::class);
+        $engine = new OpenSearchEngine($client);
+
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('getScoutModelsByIds')
+            ->andReturn($models = Collection::make([
+                new SearchableModel([
+                    'id' => 1,
+                ]),
+            ]));
+
+        $builder = m::mock(Builder::class);
+
+        $results = $engine->map($builder, [
+            'nbHits' => 1,
+            'hits' => [
+                [
+                    '_id' => 1,
+                    'id' => 1,
+                ],
+            ],
+        ], $model);
+
+        self::assertCount(1, $results);
+    }
+
+    public function testMapMethodRespectsOrder(): void
+    {
+        $client = m::mock(Client::class);
+        $engine = new OpenSearchEngine($client);
+
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('getScoutModelsByIds')
+            ->andReturn($models = Collection::make([
+                new SearchableModel([
+                    'id' => 1,
+                ]),
+                new SearchableModel([
+                    'id' => 2,
+                ]),
+                new SearchableModel([
+                    'id' => 3,
+                ]),
+                new SearchableModel([
+                    'id' => 4,
+                ]),
+            ]));
+
+        $builder = m::mock(Builder::class);
+
+        $results = $engine->map($builder, [
+            'nbHits' => 4,
+            'hits' => [
+                [
+                    '_id' => 1,
+                    'id' => 1,
+                ],
+                [
+                    '_id' => 2,
+                    'id' => 2,
+                ],
+                [
+                    '_id' => 4,
+                    'id' => 4,
+                ],
+                [
+                    '_id' => 3,
+                    'id' => 3,
+                ],
+            ],
+        ], $model);
+
+        self::assertCount(4, $results);
+
+        // It's important we assert with array keys to ensure
+        // they have been reset after sorting.
+        self::assertSame([
+            0 => [
+                'id' => 1,
+            ],
+            1 => [
+                'id' => 2,
+            ],
+            2 => [
+                'id' => 4,
+            ],
+            3 => [
+                'id' => 3,
+            ],
+        ], $results->toArray());
+    }
+
+    public function testLazyMapCorrectlyMapsResultsToModels(): void
     {
         if (! method_exists(Builder::class, 'cursor')) {
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
+        $client = m::mock(Client::class);
+        $engine = new OpenSearchEngine($client);
 
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('queryScoutModelsByIds->cursor')
+            ->andReturn($models = LazyCollection::make([
+                new SearchableModel([
+                    'id' => 1,
+                ]),
             ]));
-        $lazyCollection = SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $jsonData = [
-            'status' => 'OK',
-            'request_id' => '155310917017444091100003',
-            'result' => [
-                'searchtime' => 0.031081,
-                'total' => 1,
-                'num' => 1,
-                'viewtotal' => 1,
-                'compute_cost' => [
-                    [
-                        'index_name' => '84922',
-                        'value' => 0.292,
-                    ],
-                ],
-                'items' => [],
-                'facet' => [],
-            ],
-            'qp' => [
+
+        $builder = m::mock(Builder::class);
+
+        $results = $engine->lazyMap($builder, [
+            'nbHits' => 1,
+            'hits' => [
                 [
-                    'app_name' => '84922',
-                    'query_correction_info' => [
-                        [
-                            'index' => 'default',
-                            'original_query' => '平果手机充电器',
-                            'corrected_query' => '苹果手机充电器',
-                            'correction_level' => 1,
-                            'processor_name' => 'spell_check',
-                        ],
-                    ],
+                    '_id' => 1,
+                    'id' => 1,
                 ],
             ],
-            'errors' => [],
-            'tracer' => '',
+        ], $model);
 
-            'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
-        ];
-        $result = json_encode($jsonData);
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
-            self::assertInstanceOf(SearchableModel::class, $lazyCollection);
-        }
-
-        $result = <<<CODE_SAMPLE
-            {
-                "status": "OK",
-                "request_id": "155310917017444091100003",
-                "result": {
-                    "searchtime": 0.031081,
-                    "total": 1,
-                    "num": 1,
-                    "viewtotal": 1,
-                    "compute_cost": [
-                        {
-                            "index_name": "84922",
-                            "value": 0.292
-                        }
-                    ],
-                    "items": [
-                     {
-                            "fields": {
-                                "id": {$lazyCollection->getKey()},
-                                "name": "我是一条新<em>文档</em>的标题",
-                                "phone": "18312345678",
-                                "index_name": "app_schema_demo"
-                            },
-                            "property": {},
-                            "attribute": {},
-                            "variableValue": {},
-                           "sortExprValues": [
-                                "10",
-                                "10000.1354238242"
-                            ]
-                        }
-                    ],
-                    "facet": []
-                },
-                "qp": [
-                    {
-                        "app_name": "84922",
-                        "query_correction_info": [
-                            {
-                                "index": "default",
-                                "original_query": "平果手机充电器",
-                                "corrected_query": "苹果手机充电器",
-                                "correction_level": 1,
-                                "processor_name": "spell_check"
-                            }
-                        ]
-                    }
-                ],
-                "errors": [],
-                "tracer": "",
-                "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-            }
-            CODE_SAMPLE;
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
-            self::assertInstanceOf(SearchableModel::class, $lazyCollection);
-        }
+        self::assertCount(1, $results);
     }
 
-    public function testCursorFailed(): void
+    public function testLazyMapMethodRespectsOrder(): void
     {
         if (! method_exists(Builder::class, 'cursor')) {
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
+        $client = m::mock(Client::class);
+        $engine = new OpenSearchEngine($client);
 
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('queryScoutModelsByIds->cursor')
+            ->andReturn($models = LazyCollection::make([
+                new SearchableModel([
+                    'id' => 1,
+                ]),
+                new SearchableModel([
+                    'id' => 2,
+                ]),
+                new SearchableModel([
+                    'id' => 3,
+                ]),
+                new SearchableModel([
+                    'id' => 4,
+                ]),
             ]));
-        $lazyCollection = SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $jsonData = [
-            'status' => 'OK',
-            'request_id' => '155310917017444091100003',
-            'result' => [
-                'searchtime' => 0.031081,
-                'total' => 1,
-                'num' => 1,
-                'viewtotal' => 1,
-                'compute_cost' => [
+
+        $builder = m::mock(Builder::class);
+
+        $results = $engine->lazyMap($builder, [
+            'hits' => [
+                [
+                    '_id' => 1,
+                    'id' => 1,
+                ],
+                [
+                    '_id' => 2,
+                    'id' => 2,
+                ],
+                [
+                    '_id' => 4,
+                    'id' => 4,
+                ],
+                [
+                    '_id' => 3,
+                    'id' => 3,
+                ],
+            ],
+        ], $model);
+
+        self::assertCount(4, $results);
+
+        // It's important we assert with array keys to ensure
+        // they have been reset after sorting.
+        self::assertSame([
+            0 => [
+                'id' => 1,
+            ],
+            1 => [
+                'id' => 2,
+            ],
+            2 => [
+                'id' => 4,
+            ],
+            3 => [
+                'id' => 3,
+            ],
+        ], $results->toArray());
+    }
+
+    public function testAModelIsIndexedWithACustomAlgoliaKey(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
                     [
-                        'index_name' => '84922',
-                        'value' => 0.292,
+                        'index' => [
+                            '_index' => 'table',
+                            '_id' => 'my-opensearch-key.1',
+                        ],
+                    ],
+                    [
+                        'id' => 'my-opensearch-key.1',
                     ],
                 ],
-                'items' => [],
-                'facet' => [],
-            ],
-            'qp' => [
-                [
-                    'app_name' => '84922',
-                    'query_correction_info' => [
-                        [
-                            'index' => 'default',
-                            'original_query' => '平果手机充电器',
-                            'corrected_query' => '苹果手机充电器',
-                            'correction_level' => 1,
-                            'processor_name' => 'spell_check',
+            ]);
+
+        $engine = new OpenSearchEngine($client);
+        $engine->update(Collection::make([
+            new CustomKeySearchableModel([
+                'id' => 1,
+            ]),
+        ]));
+    }
+
+    public function testAModelIsRemovedWithACustomAlgoliaKey(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    [
+                        'delete' => [
+                            '_index' => 'table',
+                            '_id' => 'my-opensearch-key.1',
                         ],
                     ],
                 ],
-            ],
-            'errors' => [],
-            'tracer' => '',
+            ]);
 
-            'ops_request_misc' => '%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D',
-        ];
-        $result = json_encode($jsonData);
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        foreach (SearchableModel::search('test')->cursor() as $lazyCollection) {
-            self::assertInstanceOf(SearchableModel::class, $lazyCollection);
-        }
-
-        $jsonData = [
-            'errors' => [
-                [
-                    'code' => 2001,
-                    'message' => '待查应用不存在.待查应用不存在。',
-                    'params' => [
-                        'friendly_message' => '待查应用不存在。',
-                    ],
-                ],
-            ],
-            'request_id' => '150116732819940316116461',
-            'status' => 'FAIL',
-        ];
-        $result = json_encode($jsonData);
-
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        self::assertCount(0, SearchableModel::search('test')->cursor());
+        $engine = new OpenSearchEngine($client);
+        $engine->delete(Collection::make([
+            new CustomKeySearchableModel([
+                'id' => 1,
+            ]),
+        ]));
     }
 
-    public function testPaginate2(): void
+    public function testFlushAModelWithACustomAlgoliaKey(): void
     {
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        $lazyCollection = SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $result = <<<CODE_SAMPLE
-            {
-                "status": "OK",
-                "request_id": "155310917017444091100003",
-                "result": {
-                    "searchtime": 0.031081,
-                    "total": 1,
-                    "num": 1,
-                    "viewtotal": 1,
-                    "compute_cost": [
-                        {
-                            "index_name": "84922",
-                            "value": 0.292
-                        }
-                    ],
-                    "items": [
-                     {
-                            "fields": {
-                                "id": {$lazyCollection->getKey()},
-                                "name": "我是一条新<em>文档</em>的标题",
-                                "phone": "18312345678",
-                                "index_name": "app_schema_demo"
-                            },
-                            "property": {},
-                            "attribute": {},
-                            "variableValue": {},
-                           "sortExprValues": [
-                                "10",
-                                "10000.1354238242"
-                            ]
-                        }
-                    ],
-                    "facet": []
-                },
-                "qp": [
-                    {
-                        "app_name": "84922",
-                        "query_correction_info": [
-                            {
-                                "index": "default",
-                                "original_query": "平果手机充电器",
-                                "corrected_query": "苹果手机充电器",
-                                "correction_level": 1,
-                                "processor_name": "spell_check"
-                            }
-                        ]
-                    }
-                ],
-                "errors": [],
-                "tracer": "",
-                "ops_request_misc": "%7B%22request%5Fid%22%3A%22155310917017444091100003%22%7D"
-            }
-            CODE_SAMPLE;
+        $builder = m::mock(Builder::class);
+        $builder->shouldReceive('unsearchable')
+            ->once()
+            ->withNoArgs();
+        $model = m::mock(CustomKeySearchableModel::class);
+        $model->shouldReceive('getKeyName')
+            ->withNoArgs()
+            ->andReturn('table');
+        $model->shouldReceive('newQuery->orderBy')
+            ->with('table')
+            ->andReturn($builder);
 
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        self::assertSame(1, SearchableModel::search('test')->paginate()->total());
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        self::assertSame(1, SearchableModel::search('test')->query(static function (): void {
-        })->paginate()
-            ->total());
+        $engine = new OpenSearchEngine(ClientBuilder::fromConfig([]));
+        $engine->flush($model);
     }
 
-    public function testPaginateFailed(): void
+    public function testUpdateEmptySearchableArrayDoesNotAddObjectsToIndex(): void
     {
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]));
-        SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        $jsonData = [
-            'errors' => [
-                [
-                    'code' => 2001,
-                    'message' => '待查应用不存在.待查应用不存在。',
-                    'params' => [
-                        'friendly_message' => '待查应用不存在。',
-                    ],
-                ],
-            ],
-            'request_id' => '150116732819940316116461',
-            'status' => 'FAIL',
-        ];
-        $result = json_encode($jsonData);
+        $client = m::mock(Client::class);
 
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        self::assertSame(0, SearchableModel::search('test')->paginate()->total());
-        $this->client->shouldReceive('get')
-            ->times(1)
-            ->andReturn(new OpenSearchResult([
-                'result' => $result,
-            ]));
-        self::assertSame(0, SearchableModel::search('test')->query(static function (): void {
-        })->paginate()
-            ->total());
+        $client->shouldNotReceive('bulk');
+        $engine = new OpenSearchEngine($client);
+        $engine->update(Collection::make([new EmptySearchableModel()]));
     }
 
-    public function testFlush(): void
+    public function testUpdateEmptySearchableArrayFromSoftDeletedModelDoesNotAddObjectsToIndex(): void
     {
-        $this->client->shouldReceive('post')
-            ->andReturn(new OpenSearchResult([
-                'result' => '{
-    "errors": [],
-    "request_id": "150116724719940316170289",
-    "status": "OK",
-    "result": true
-}',
-            ]))->twice();
-        SearchableModel::query()->create([
-            'name' => 'test',
-        ]);
-        SearchableModel::removeAllFromSearch();
+        $client = m::mock(Client::class);
+        $client->shouldNotReceive('bulk');
+        $engine = new OpenSearchEngine($client, true);
+        $engine->update(Collection::make([new SoftDeletedEmptySearchableModel()]));
     }
 }

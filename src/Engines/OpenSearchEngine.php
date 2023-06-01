@@ -8,48 +8,34 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
-use OpenSearch\Client\AppClient;
-use OpenSearch\Client\DocumentClient;
-use OpenSearch\Client\OpenSearchClient;
-use OpenSearch\Client\SearchClient;
-use OpenSearch\Generated\Common\OpenSearchResult;
-use OpenSearch\Util\SearchParamsBuilder;
+use Laravel\Scout\Jobs\RemoveableScoutCollection;
+use OpenSearch\Client;
 
 class OpenSearchEngine extends Engine
 {
-    protected DocumentClient $document;
-
-    protected SearchClient $search;
-
-    protected AppClient $app;
-
     /**
      * Create a new engine instance.
-     *
-     * @param bool $softDelete
      */
     public function __construct(
-        /**
-         * The Algolia client.
-         */
-        protected OpenSearchClient $openSearchClient,
-        protected $softDelete = false
+        protected Client $client,
+        protected bool $softDelete = false
     ) {
-        $this->document = new DocumentClient($openSearchClient);
-        $this->search = new SearchClient($openSearchClient);
-        $this->app = new AppClient($openSearchClient);
     }
 
+    /**
+     * Update the given model in the index.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $models
+     */
     public function update($models): void
     {
         if ($models->isEmpty()) {
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model $model */
+        /** @var \Illuminate\Database\Eloquent\Model $model First model for search index */
         $model = $models->first();
         if ($this->usesSoftDelete($model) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
@@ -61,119 +47,157 @@ class OpenSearchEngine extends Engine
                 return null;
             }
 
-            return array_merge([
+            return array_merge($searchableData, $model->scoutMetadata(), [
                 'id' => $model->getScoutKey(),
-            ], $searchableData, $model->scoutMetadata());
+            ]);
         })->filter()
             ->values()
             ->all();
 
         if ($objects !== []) {
+            $data = [];
             foreach ($objects as $object) {
-                $this->document->add($object);
+                $data[] = [
+                    'index' => [
+                        '_index' => $model->searchableAs(),
+                        '_id' => $object['id'],
+                    ],
+                ];
+                $data[] = $object;
             }
 
-            $searchableAs = $model->searchableAs();
-            $this->document->commit($this->getAppName($searchableAs), $this->getTableName($searchableAs));
+            $this->client->bulk([
+                'index' => $model->searchableAs(),
+                'body' => $data,
+            ]);
         }
     }
 
-    protected function getAppName(string $searchableAs): string
-    {
-        return Str::before($searchableAs, '.');
-    }
-
-    protected function getTableName(string $searchableAs): string
-    {
-        return Str::after($searchableAs, '.');
-    }
-
+    /**
+     * Remove the given model from the index.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $models
+     */
     public function delete($models): void
     {
         if ($models->isEmpty()) {
             return;
         }
 
-        $objects = $models->map(static fn ($model): array => [
-            'id' => $model->getScoutKey(),
-        ])->values()
-            ->all();
-        foreach ($objects as $object) {
-            $this->document->remove($object);
-        }
-
         /** @var \Illuminate\Database\Eloquent\Model $model */
         $model = $models->first();
-        $searchableAs = $model->searchableAs();
-        $this->document->commit($this->getAppName($searchableAs), $this->getTableName($searchableAs));
+
+        $keys = $models instanceof RemoveableScoutCollection
+            ? $models->pluck($model->getScoutKeyName())
+            : $models->map->getScoutKey();
+
+        $data = $keys->map(static fn ($object): array => [
+            'delete' => [
+                '_index' => $model->searchableAs(),
+                '_id' => $object,
+            ],
+        ])->all();
+
+        $this->client->bulk([
+            'index' => $model->searchableAs(),
+            'body' => $data,
+        ]);
     }
 
+    /**
+     * Perform the given search on the engine.
+     */
     public function search(Builder $builder): mixed
     {
         return $this->performSearch($builder, array_filter([
-            'query' => $builder->query,
-            'hits' => $builder->limit,
-            'appName' => $this->getAppName($builder->model->searchableAs()),
-            'format' => 'fulljson',
-            'start' => 0,
+            'size' => $builder->limit,
         ]));
     }
 
     /**
-     * @param mixed $perPage
-     * @param mixed $page
+     * Perform the given search on the engine.
+     *
+     * @param int $perPage
+     * @param int $page
      */
     public function paginate(Builder $builder, $perPage, $page): mixed
     {
-        return $this->performSearch($builder, array_filter([
-            'query' => $builder->query,
-            'hits' => $perPage,
-            'appName' => $this->getAppName($builder->model->searchableAs()),
-            'format' => 'fulljson',
-            'start' => $perPage * ($page - 1),
-        ]));
+        return $this->performSearch($builder, [
+            'size' => $perPage,
+            'from' => $perPage * ($page - 1),
+        ]);
     }
 
     /**
+     * Perform the given search on the engine.
+     *
      * @param array<string, mixed> $options
      */
     protected function performSearch(Builder $builder, array $options = []): mixed
     {
+        $index = $builder->index ?: $builder->model->searchableAs();
+        if (property_exists($builder, 'options')) {
+            $options = array_merge($builder->options, $options);
+        }
+
         if ($builder->callback instanceof \Closure) {
-            return \call_user_func($builder->callback, $this->search, $builder->query, $options);
+            return \call_user_func($builder->callback, $this->client, $builder->query, $options);
         }
 
-        $query = $options['query'];
-        $options['query'] = \is_string($query) ? sprintf("'%s'", $query) : $query;
-        $searchParamsBuilder = new SearchParamsBuilder($options);
-        if (empty($builder->orders)) {
-            $searchParamsBuilder->addSort('id', SearchParamsBuilder::SORT_DECREASE);
+        $query = $builder->query;
+        $options['query'] = [
+            'query_string' => [
+                'query' => $query,
+            ],
+        ];
+        $filter = collect($builder->wheres)
+            ->map(static fn ($value, $key): array => [
+                'term' => [
+                    $key => $value,
+                ],
+            ])->values();
+
+        if (property_exists($builder, 'whereIns')) {
+            $filter = $filter->merge(collect($builder->whereIns)->map(static fn ($values, $key): array => [
+                'terms' => [
+                    $key => $values,
+                ],
+            ])->values())->values();
         }
 
-        foreach ($builder->orders as $order) {
-            if ($order['direction'] === 'desc') {
-                $direction = SearchParamsBuilder::SORT_DECREASE;
-                $searchParamsBuilder->addSort($order['column'], $direction);
-            } elseif ($order['direction'] === 'asc') {
-                $direction = SearchParamsBuilder::SORT_INCREASE;
-                $searchParamsBuilder->addSort($order['column'], $direction);
-            }
+        if ($filter->isNotEmpty()) {
+            $options['query'] = [
+                'bool' => [
+                    'filter' => $filter->all(),
+                    'must' => [$options['query']],
+                ],
+            ];
         }
 
-        foreach ($builder->wheres as $key => $value) {
-            $searchParamsBuilder->setFilter(sprintf('%s=%s', $key, $value));
-        }
+        $options['sort'] = collect($builder->orders)->map(static fn ($order): array => [
+            $order['column'] => [
+                'order' => $order['direction'],
+            ],
+        ])->whenEmpty(static fn (): Collection => collect([
+            [
+                'id' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ]))->all();
 
-        $result = $this->search->execute($searchParamsBuilder->build());
+        $result = $this->client->search([
+            'index' => $index,
+            'body' => $options,
+        ]);
 
-        /** @var array<string, mixed> $searchResult */
-        $searchResult = json_decode($result->result, true, 512, JSON_THROW_ON_ERROR);
-
-        return $searchResult['result'] ?? null;
+        return $result['hits'] ?? null;
     }
 
     /**
-     * @param array{items: mixed[]|null}|null $results
+     * Pluck and return the primary keys of the given results.
+     *
+     * @param array{hits: mixed[]|null}|null $results
      */
     public function mapIds($results): Collection
     {
@@ -181,12 +205,16 @@ class OpenSearchEngine extends Engine
             return collect();
         }
 
-        return collect($results['items'])->pluck('fields.id')->values();
+        return collect($results['hits'])->pluck('_id')->values();
     }
 
     /**
-     * @param array{items: mixed[]|null}|null $results
+     * Map the given results to instances of the given model.
+     *
+     * @param array{hits: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function map(Builder $builder, $results, $model): mixed
     {
@@ -194,15 +222,15 @@ class OpenSearchEngine extends Engine
             return $model->newCollection();
         }
 
-        if (! isset($results['items'])) {
+        if (! isset($results['hits'])) {
             return $model->newCollection();
         }
 
-        if ($results['items'] === []) {
+        if ($results['hits'] === []) {
             return $model->newCollection();
         }
 
-        $objectIds = collect($results['items'])->pluck('fields.id')->values()->all();
+        $objectIds = collect($results['hits'])->pluck('_id')->values()->all();
 
         $objectIdPositions = array_flip($objectIds);
 
@@ -214,24 +242,24 @@ class OpenSearchEngine extends Engine
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
-     * @param array{items: mixed[]|null}|null $results
+     * @param array{hits: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
      */
-    public function lazyMap(Builder $builder, $results, $model): mixed
+    public function lazyMap(Builder $builder, $results, $model): LazyCollection
     {
         if ($results === null) {
             return LazyCollection::make($model->newCollection());
         }
 
-        if (! isset($results['items'])) {
+        if (! isset($results['hits'])) {
             return LazyCollection::make($model->newCollection());
         }
 
-        if ($results['items'] === []) {
+        if ($results['hits'] === []) {
             return LazyCollection::make($model->newCollection());
         }
 
-        $objectIds = collect($results['items'])->pluck('fields.id')->values()->all();
+        $objectIds = collect($results['hits'])->pluck('_id')->values()->all();
         $objectIdPositions = array_flip($objectIds);
 
         return $model->queryScoutModelsByIds($builder, $objectIds)
@@ -241,13 +269,20 @@ class OpenSearchEngine extends Engine
     }
 
     /**
-     * @param array<string, mixed>|null $results
+     * Get the total count from a raw result returned by the engine.
+     *
+     * @param mixed $results
      */
-    public function getTotalCount($results): mixed
+    public function getTotalCount($results): int
     {
-        return $results['total'] ?? 0;
+        return $results['total']['value'] ?? 0;
     }
 
+    /**
+     * Flush all of the model's records from the engine.
+     *
+     * @param \Illuminate\Database\Eloquent\Model $model
+     */
     public function flush($model): void
     {
         $model->newQuery()
@@ -260,20 +295,35 @@ class OpenSearchEngine extends Engine
      *
      * @param string $name
      * @param array<string, mixed> $options
+     *
+     * @return array{acknowledged: bool, shards_acknowledged: bool, index: string}
+     *
+     * @phpstan-return array<string, mixed>
      */
-    public function createIndex($name, array $options = []): OpenSearchResult
+    public function createIndex($name, array $options = []): array
     {
-        return $this->app->save($name);
+        return $this->client->indices()
+            ->create([
+                'index' => $name,
+                'body' => $options,
+            ]);
     }
 
     /**
      * Delete a search index.
      *
      * @param string $name
+     *
+     * @return array{acknowledged: bool}
+     *
+     * @phpstan-return array<string, mixed>
      */
-    public function deleteIndex($name): OpenSearchResult
+    public function deleteIndex($name): array
     {
-        return $this->app->removeById($name);
+        return $this->client->indices()
+            ->delete([
+                'index' => $name,
+            ]);
     }
 
     /**
@@ -282,5 +332,18 @@ class OpenSearchEngine extends Engine
     protected function usesSoftDelete(Model $model): bool
     {
         return \in_array(SoftDeletes::class, class_uses_recursive($model), true);
+    }
+
+    /**
+     * Dynamically call the OpenSearch client instance.
+     *
+     * @param string $method
+     * @param array<int, mixed> $parameters
+     *
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        return $this->client->{$method}(...$parameters);
     }
 }

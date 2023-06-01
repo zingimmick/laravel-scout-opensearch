@@ -8,6 +8,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\ScoutServiceProvider;
+use OpenSearch\ClientBuilder;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Zing\LaravelScout\OpenSearch\OpenSearchServiceProvider;
 
@@ -52,9 +53,11 @@ abstract class TestCase extends BaseTestCase
         );
         Config::set('scout.driver', 'opensearch');
         Config::set('scout.opensearch', [
-            'access_key' => 'your-opensearch-access-key',
-            'secret' => 'your-opensearch-secret',
-            'host' => 'your-opensearch-host',
+            'hosts' => ['localhost:9200'],
+            'retries' => 2,
+            'handler' => ClientBuilder::multiHandler(),
+            'basicAuthentication' => ['admin', 'admin'],
+            'sslVerification' => false,
         ]);
     }
 

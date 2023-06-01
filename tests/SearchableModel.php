@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 
 /**
+ * @property string $name
+ * @property int $is_visible
+ *
  * @method static static|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder query()
  */
 class SearchableModel extends Model
@@ -18,7 +21,7 @@ class SearchableModel extends Model
 
     public function searchableAs(): string
     {
-        return 'app.table';
+        return 'searchable-model';
     }
 
     /**
@@ -28,11 +31,13 @@ class SearchableModel extends Model
     {
         return [
             'id' => $this->getScoutKey(),
+            'name' => $this->name,
+            'is_visible' => $this->is_visible,
         ];
     }
 
     /**
      * @var string[]
      */
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'is_visible'];
 }
