@@ -114,6 +114,9 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testDeleteWithRemoveableScoutCollectionUsingCustomSearchKey(): void
     {
+        if (! class_exists(RemoveFromSearch::class)) {
+            self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
+        }
         $job = new RemoveFromSearch(Collection::make([
             new CustomKeySearchableModel([
                 'id' => 5,
@@ -142,6 +145,9 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testRemoveFromSearchJobUsesCustomSearchKey(): void
     {
+        if (! class_exists(RemoveFromSearch::class)) {
+            self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
+        }
         $job = new RemoveFromSearch(Collection::make([
             new CustomKeySearchableModel([
                 'id' => 5,
@@ -218,6 +224,9 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSearchSendsCorrectParametersToAlgoliaForWhereInSearch(): void
     {
+        if (! method_exists(Builder::class, 'whereIn')) {
+            self::markTestSkipped('Support for whereIn available since 9.0.');
+        }
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
@@ -266,6 +275,9 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSearchSendsCorrectParametersToAlgoliaForEmptyWhereInSearch(): void
     {
+        if (! method_exists(Builder::class, 'whereIn')) {
+            self::markTestSkipped('Support for whereIn available since 9.0.');
+        }
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
@@ -408,6 +420,9 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testLazyMapCorrectlyMapsResultsToModels(): void
     {
+        if (! method_exists(Builder::class, 'cursor')) {
+            self::markTestSkipped('Support for cursor available since 9.0.');
+        }
         $client = m::mock(Client::class);
         $engine = new OpenSearchEngine($client);
 
@@ -436,6 +451,9 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testLazyMapMethodRespectsOrder(): void
     {
+        if (! method_exists(Builder::class, 'cursor')) {
+            self::markTestSkipped('Support for cursor available since 9.0.');
+        }
         $client = m::mock(Client::class);
         $engine = new OpenSearchEngine($client);
 
