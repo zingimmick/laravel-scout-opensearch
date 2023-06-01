@@ -285,9 +285,14 @@ class OpenSearchEngine extends Engine
      */
     public function flush($model): void
     {
-        $model->newQuery()
-            ->orderBy($model->getKeyName())
-            ->unsearchable();
+        $this->client->deleteByQuery([
+            'index' => $model->searchableAs(),
+            'body' => [
+                'query' => [
+                    'match_all' => new \stdClass(),
+                ],
+            ],
+        ]);
     }
 
     /**
