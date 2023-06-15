@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 
+/**
+ * @property string $name
+ * @property int $is_visible
+ *
+ * @method static static|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder query()
+ */
 class SearchableModelHasUuids extends Model
 {
     use HasUuids;
@@ -18,7 +24,7 @@ class SearchableModelHasUuids extends Model
     protected $primaryKey = 'uuid';
 
     /**
-     * @return array{id: mixed}
+     * @return array{name: string, is_visible: int}
      */
     public function toSearchableArray(): array
     {
