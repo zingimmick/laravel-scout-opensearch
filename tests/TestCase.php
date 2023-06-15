@@ -75,5 +75,17 @@ abstract class TestCase extends BaseTestCase
                 $table->softDeletes();
             }
         );
+        DB::connection()->getSchemaBuilder()->create(
+            'searchable_model_has_uuids',
+            static function (Blueprint $table): void {
+                $table->uuid('id');
+                $table->string('name')
+                    ->default('');
+                $table->boolean('is_visible')
+                    ->default(true);
+                $table->timestamps();
+                $table->softDeletes();
+            }
+        );
     }
 }
