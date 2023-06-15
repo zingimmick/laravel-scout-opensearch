@@ -219,7 +219,8 @@ final class OpenSearchEngineTest extends TestCase
 
         $engine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
-        $builder->where('foo', 1)->orderBy('id', 'desc');
+        $builder->where('foo', 1)
+            ->orderBy('id', 'desc');
         $engine->search($builder);
     }
 
