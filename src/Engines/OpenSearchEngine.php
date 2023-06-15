@@ -48,7 +48,7 @@ class OpenSearchEngine extends Engine
             }
 
             return array_merge($searchableData, $model->scoutMetadata(), [
-                'id' => $model->getScoutKey(),
+                $model->getScoutKeyName() => $model->getScoutKey(),
             ]);
         })->filter()
             ->values()
@@ -60,7 +60,7 @@ class OpenSearchEngine extends Engine
                 $data[] = [
                     'index' => [
                         '_index' => $model->searchableAs(),
-                        '_id' => $object['id'],
+                        '_id' => $object[$model->getScoutKeyName()],
                     ],
                 ];
                 $data[] = $object;
@@ -178,13 +178,7 @@ class OpenSearchEngine extends Engine
             $order['column'] => [
                 'order' => $order['direction'],
             ],
-        ])->whenEmpty(static fn (): Collection => collect([
-            [
-                'id' => [
-                    'order' => 'desc',
-                ],
-            ],
-        ]))->all();
+        ])->all();
 
         $result = $this->client->search([
             'index' => $index,

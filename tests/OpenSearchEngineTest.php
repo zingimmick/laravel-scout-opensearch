@@ -36,6 +36,9 @@ final class OpenSearchEngineTest extends TestCase
     public function testUpdateAddsObjectsToIndex(): void
     {
         $client = m::mock(Client::class);
+        $model = new SearchableModel([
+            'id' => 1,
+        ]);
         $client->shouldReceive('bulk')
             ->once()
             ->with([
@@ -47,18 +50,16 @@ final class OpenSearchEngineTest extends TestCase
                             '_id' => 1,
                         ],
                     ],
-                    [
+                    array_merge([
                         'id' => 1,
-                    ],
+                    ], [
+                        $model->getScoutKeyName() => $model->getScoutKey(),
+                    ]),
                 ],
             ]);
 
         $engine = new OpenSearchEngine($client);
-        $engine->update(Collection::make([
-            new SearchableModel([
-                'id' => 1,
-            ]),
-        ]));
+        $engine->update(Collection::make([$model]));
     }
 
     public function testDeleteRemovesObjectsToIndex(): void
@@ -217,7 +218,8 @@ final class OpenSearchEngineTest extends TestCase
 
         $engine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
-        $builder->where('foo', 1);
+        $builder->where('foo', 1)
+            ->orderBy('id', 'desc');
         $engine->search($builder);
     }
 
@@ -268,7 +270,8 @@ final class OpenSearchEngineTest extends TestCase
         $engine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
         $builder->where('foo', 1)
-            ->whereIn('bar', [1, 2]);
+            ->whereIn('bar', [1, 2])
+            ->orderBy('id', 'desc');
         $engine->search($builder);
     }
 
@@ -319,7 +322,8 @@ final class OpenSearchEngineTest extends TestCase
         $engine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
         $builder->where('foo', 1)
-            ->whereIn('bar', []);
+            ->whereIn('bar', [])
+            ->orderBy('id', 'desc');
         $engine->search($builder);
     }
 
@@ -519,6 +523,9 @@ final class OpenSearchEngineTest extends TestCase
     public function testAModelIsIndexedWithACustomAlgoliaKey(): void
     {
         $client = m::mock(Client::class);
+        $model = new CustomKeySearchableModel([
+            'id' => 1,
+        ]);
         $client->shouldReceive('bulk')
             ->once()
             ->with([
@@ -530,18 +537,16 @@ final class OpenSearchEngineTest extends TestCase
                             '_id' => 'my-opensearch-key.1',
                         ],
                     ],
-                    [
-                        'id' => 'my-opensearch-key.1',
-                    ],
+                    array_merge([
+                        'id' => 1,
+                    ], [
+                        $model->getScoutKeyName() => $model->getScoutKey(),
+                    ]),
                 ],
             ]);
 
         $engine = new OpenSearchEngine($client);
-        $engine->update(Collection::make([
-            new CustomKeySearchableModel([
-                'id' => 1,
-            ]),
-        ]));
+        $engine->update(Collection::make([$model]));
     }
 
     public function testAModelIsRemovedWithACustomAlgoliaKey(): void

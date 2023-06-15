@@ -89,7 +89,7 @@ final class ScoutTest extends TestCase
             'name' => 'test search 3',
         ]);
         sleep(1);
-        self::assertSame(3, SearchableModel::search('test')->first()->getKey());
+        self::assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
         self::assertSame(1, SearchableModel::search('test')->orderBy('id')->first()->getKey());
         self::assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
     }
