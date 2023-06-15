@@ -15,10 +15,7 @@ class SearchableModelHasUuids extends Model
     use Searchable;
     use SoftDeletes;
 
-    public function searchableAs(): string
-    {
-        return 'searchable-model';
-    }
+    protected $primaryKey = 'uuid';
 
     /**
      * @return array{id: mixed}

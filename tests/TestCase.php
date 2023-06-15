@@ -78,7 +78,7 @@ abstract class TestCase extends BaseTestCase
         DB::connection()->getSchemaBuilder()->create(
             'searchable_model_has_uuids',
             static function (Blueprint $table): void {
-                $table->uuid('id');
+                $table->uuid('uuid');
                 $table->string('name')
                     ->default('');
                 $table->boolean('is_visible')
