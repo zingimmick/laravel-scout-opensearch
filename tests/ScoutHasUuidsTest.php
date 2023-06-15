@@ -88,23 +88,6 @@ final class ScoutHasUuidsTest extends TestCase
         self::assertCount(0, SearchableModelHasUuids::search('test')->keys());
     }
 
-    public function testOrderBy(): void
-    {
-        SearchableModelHasUuids::query()->create([
-            'name' => 'test search 1',
-        ]);
-        SearchableModelHasUuids::query()->create([
-            'name' => 'test search 2',
-        ]);
-        SearchableModelHasUuids::query()->create([
-            'name' => 'test search 3',
-        ]);
-        sleep(1);
-        self::assertSame(3, SearchableModelHasUuids::search('test')->first()->getKey());
-        self::assertSame(1, SearchableModelHasUuids::search('test')->orderBy('id')->first()->getKey());
-        self::assertSame(3, SearchableModelHasUuids::search('test')->orderBy('id', 'desc')->first()->getKey());
-    }
-
     public function testWhere(): void
     {
         SearchableModelHasUuids::query()->create([

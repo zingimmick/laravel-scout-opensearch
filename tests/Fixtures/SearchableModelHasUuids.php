@@ -23,7 +23,6 @@ class SearchableModelHasUuids extends Model
     public function toSearchableArray(): array
     {
         return [
-            'id' => $this->getScoutKey(),
             'name' => $this->name,
             'is_visible' => $this->is_visible,
         ];
