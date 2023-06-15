@@ -19,16 +19,16 @@ final class ScoutHasUuidsTest extends TestCase
     {
         parent::setUp();
 
-        $searchableModel = new SearchableModelHasUuids();
-        $searchableModel->searchableUsing()
-            ->createIndex($searchableModel->searchableAs());
+        $searchableModelHasUuids = new SearchableModelHasUuids();
+        $searchableModelHasUuids->searchableUsing()
+            ->createIndex($searchableModelHasUuids->searchableAs());
     }
 
     protected function tearDown(): void
     {
-        $searchableModel = new SearchableModelHasUuids();
-        $searchableModel->searchableUsing()
-            ->deleteIndex($searchableModel->searchableAs());
+        $searchableModelHasUuids = new SearchableModelHasUuids();
+        $searchableModelHasUuids->searchableUsing()
+            ->deleteIndex($searchableModelHasUuids->searchableAs());
 
         parent::tearDown();
     }
