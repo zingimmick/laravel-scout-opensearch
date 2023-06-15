@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Zing\LaravelScout\OpenSearch\Tests;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Scout\Builder;
+use Laravel\Scout\Jobs\RemoveFromSearch;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModelHasUuids;
 
 /**
@@ -17,6 +19,9 @@ final class ScoutHasUuidsTest extends TestCase
 
     protected function setUp(): void
     {
+        if (! class_exists(HasUuids::class)) {
+            self::markTestSkipped('Support for HasUuids available since 9.0.');
+        }
         parent::setUp();
 
         $searchableModelHasUuids = new SearchableModelHasUuids();
