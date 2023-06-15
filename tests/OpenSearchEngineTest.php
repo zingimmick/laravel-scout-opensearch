@@ -36,6 +36,9 @@ final class OpenSearchEngineTest extends TestCase
     public function testUpdateAddsObjectsToIndex(): void
     {
         $client = m::mock(Client::class);
+        $model = new SearchableModel([
+            'id' => 1,
+        ]);
         $client->shouldReceive('bulk')
             ->once()
             ->with([
@@ -47,17 +50,16 @@ final class OpenSearchEngineTest extends TestCase
                             '_id' => 1,
                         ],
                     ],
-                    [
-                        'id' => 1,
-                    ],
+                    array_merge([
+                        'id' => 1,], [
+                        $model->getScoutKeyName() => $model->getScoutKey(),
+                    ]),
                 ],
             ]);
 
         $engine = new OpenSearchEngine($client);
         $engine->update(Collection::make([
-            new SearchableModel([
-                'id' => 1,
-            ]),
+            $model
         ]));
     }
 
@@ -113,7 +115,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testDeleteWithRemoveableScoutCollectionUsingCustomSearchKey(): void
     {
-        if (! class_exists(RemoveFromSearch::class)) {
+        if (!class_exists(RemoveFromSearch::class)) {
             self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
         }
         $job = new RemoveFromSearch(Collection::make([
@@ -144,7 +146,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testRemoveFromSearchJobUsesCustomSearchKey(): void
     {
-        if (! class_exists(RemoveFromSearch::class)) {
+        if (!class_exists(RemoveFromSearch::class)) {
             self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
         }
         $job = new RemoveFromSearch(Collection::make([
@@ -223,7 +225,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSearchSendsCorrectParametersToAlgoliaForWhereInSearch(): void
     {
-        if (! method_exists(Builder::class, 'whereIn')) {
+        if (!method_exists(Builder::class, 'whereIn')) {
             self::markTestSkipped('Support for whereIn available since 9.0.');
         }
         $client = m::mock(Client::class);
@@ -275,7 +277,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testSearchSendsCorrectParametersToAlgoliaForEmptyWhereInSearch(): void
     {
-        if (! method_exists(Builder::class, 'whereIn')) {
+        if (!method_exists(Builder::class, 'whereIn')) {
             self::markTestSkipped('Support for whereIn available since 9.0.');
         }
         $client = m::mock(Client::class);
@@ -421,7 +423,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testLazyMapCorrectlyMapsResultsToModels(): void
     {
-        if (! method_exists(Builder::class, 'cursor')) {
+        if (!method_exists(Builder::class, 'cursor')) {
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
         $client = m::mock(Client::class);
@@ -452,7 +454,7 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testLazyMapMethodRespectsOrder(): void
     {
-        if (! method_exists(Builder::class, 'cursor')) {
+        if (!method_exists(Builder::class, 'cursor')) {
             self::markTestSkipped('Support for cursor available since 9.0.');
         }
         $client = m::mock(Client::class);
@@ -521,6 +523,9 @@ final class OpenSearchEngineTest extends TestCase
     public function testAModelIsIndexedWithACustomAlgoliaKey(): void
     {
         $client = m::mock(Client::class);
+        $model = new CustomKeySearchableModel([
+            'id' => 1,
+        ]);
         $client->shouldReceive('bulk')
             ->once()
             ->with([
@@ -532,17 +537,16 @@ final class OpenSearchEngineTest extends TestCase
                             '_id' => 'my-opensearch-key.1',
                         ],
                     ],
-                    [
-                        'id' => 'my-opensearch-key.1',
-                    ],
+                    array_merge([
+                        'id' => 1,], [
+                        $model->getScoutKeyName() => $model->getScoutKey(),
+                    ]),
                 ],
             ]);
 
         $engine = new OpenSearchEngine($client);
         $engine->update(Collection::make([
-            new CustomKeySearchableModel([
-                'id' => 1,
-            ]),
+            $model,
         ]));
     }
 
