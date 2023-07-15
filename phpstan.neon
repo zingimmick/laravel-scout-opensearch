@@ -21,4 +21,3 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::toSearchableArray\(\).#'
         - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection>::pushSoftDeleteMetadata\(\).#'
         - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection>::getScoutKey\(\).#'
-        - '#Parameter \#1 ...\$arrays of function array_merge expects array, int given.#'
