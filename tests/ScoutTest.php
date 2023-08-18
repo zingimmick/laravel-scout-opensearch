@@ -56,25 +56,25 @@ final class ScoutTest extends TestCase
             'name' => 'not matched',
         ]);
         sleep(1);
-        self::assertCount(6, SearchableModel::search('test')->get());
+        $this->assertCount(6, SearchableModel::search('test')->get());
         SearchableModel::query()->firstOrFail()->delete();
         sleep(1);
-        self::assertCount(5, SearchableModel::search('test')->get());
-        self::assertCount(1, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
+        $this->assertCount(5, SearchableModel::search('test')->get());
+        $this->assertCount(1, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
-            self::assertCount(5, SearchableModel::search('test')->cursor());
+            $this->assertCount(5, SearchableModel::search('test')->cursor());
         }
 
-        self::assertCount(5, SearchableModel::search('test')->keys());
+        $this->assertCount(5, SearchableModel::search('test')->keys());
         SearchableModel::removeAllFromSearch();
         sleep(1);
-        self::assertCount(0, SearchableModel::search('test')->get());
-        self::assertCount(0, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
+        $this->assertCount(0, SearchableModel::search('test')->get());
+        $this->assertCount(0, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
-            self::assertCount(0, SearchableModel::search('test')->cursor());
+            $this->assertCount(0, SearchableModel::search('test')->cursor());
         }
 
-        self::assertCount(0, SearchableModel::search('test')->keys());
+        $this->assertCount(0, SearchableModel::search('test')->keys());
     }
 
     public function testOrderBy(): void
@@ -89,9 +89,9 @@ final class ScoutTest extends TestCase
             'name' => 'test search 3',
         ]);
         sleep(1);
-        self::assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
-        self::assertSame(1, SearchableModel::search('test')->orderBy('id')->first()->getKey());
-        self::assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
+        $this->assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
+        $this->assertSame(1, SearchableModel::search('test')->orderBy('id')->first()->getKey());
+        $this->assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
     }
 
     public function testWhere(): void
@@ -112,11 +112,11 @@ final class ScoutTest extends TestCase
             'name' => 'nothing',
         ]);
         sleep(1);
-        self::assertCount(3, SearchableModel::search('test')->get());
-        self::assertCount(2, SearchableModel::search('test')->where('is_visible', 1)->get());
+        $this->assertCount(3, SearchableModel::search('test')->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', 1)->get());
         if (method_exists(Builder::class, 'whereIn')) {
-            self::assertCount(3, SearchableModel::search('test')->whereIn('is_visible', [0, 1])->get());
-            self::assertCount(0, SearchableModel::search('test')->whereIn('is_visible', [])->get());
+            $this->assertCount(3, SearchableModel::search('test')->whereIn('is_visible', [0, 1])->get());
+            $this->assertCount(0, SearchableModel::search('test')->whereIn('is_visible', [])->get());
         }
     }
 }

@@ -7,9 +7,6 @@ parameters:
     paths:
         - src
         - tests
-    excludePaths:
-        analyse:
-            - tests/OpenSearchEngineTest.php
     checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKey\(\).#'
