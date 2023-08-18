@@ -36,7 +36,7 @@ final class OpenSearchEngineTest extends TestCase
     public function testUpdateAddsObjectsToIndex(): void
     {
         $client = m::mock(Client::class);
-        $model = new SearchableModel([
+        $searchableModel = new SearchableModel([
             'id' => 1,
         ]);
         $client->shouldReceive('bulk')
@@ -50,16 +50,15 @@ final class OpenSearchEngineTest extends TestCase
                             '_id' => 1,
                         ],
                     ],
-                    array_merge([
+                    [
                         'id' => 1,
-                    ], [
-                        $model->getScoutKeyName() => $model->getScoutKey(),
-                    ]),
+                        $searchableModel->getScoutKeyName() => $searchableModel->getScoutKey(),
+                    ],
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
-        $engine->update(Collection::make([$model]));
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->update(Collection::make([$searchableModel]));
     }
 
     public function testDeleteRemovesObjectsToIndex(): void
@@ -79,8 +78,8 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
-        $engine->delete(Collection::make([
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete(Collection::make([
             new SearchableModel([
                 'id' => 1,
             ]),
@@ -104,8 +103,8 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
-        $engine->delete(Collection::make([
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete(Collection::make([
             new CustomKeySearchableModel([
                 'id' => 5,
             ]),
@@ -115,8 +114,9 @@ final class OpenSearchEngineTest extends TestCase
     public function testDeleteWithRemoveableScoutCollectionUsingCustomSearchKey(): void
     {
         if (! class_exists(RemoveFromSearch::class)) {
-            self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
+            $this->markTestSkipped('Support for RemoveFromSearch available since 9.0.');
         }
+
         $job = new RemoveFromSearch(Collection::make([
             new CustomKeySearchableModel([
                 'id' => 5,
@@ -139,15 +139,16 @@ final class OpenSearchEngineTest extends TestCase
                     ],
                 ],
             ]);
-        $engine = new OpenSearchEngine($client);
-        $engine->delete($job->models);
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete($job->models);
     }
 
     public function testRemoveFromSearchJobUsesCustomSearchKey(): void
     {
         if (! class_exists(RemoveFromSearch::class)) {
-            self::markTestSkipped('Support for RemoveFromSearch available since 9.0.');
+            $this->markTestSkipped('Support for RemoveFromSearch available since 9.0.');
         }
+
         $job = new RemoveFromSearch(Collection::make([
             new CustomKeySearchableModel([
                 'id' => 5,
@@ -156,20 +157,17 @@ final class OpenSearchEngineTest extends TestCase
 
         $job = unserialize(serialize($job));
 
-        Container::getInstance()->bind(EngineManager::class, function () {
+        Container::getInstance()->bind(EngineManager::class, static function () {
             $engine = m::mock(OpenSearchEngine::class);
-
             $engine->shouldReceive('delete')
                 ->once()
-                ->with(m::on(function ($collection) {
+                ->with(m::on(static function ($collection): bool {
                     $keyName = ($model = $collection->first())
                         ->getScoutKeyName();
 
                     return $model->getAttributes()[$keyName] === 'my-opensearch-key.5';
                 }));
-
             $manager = m::mock(EngineManager::class);
-
             $manager->shouldReceive('engine')
                 ->once()
                 ->andReturn($engine);
@@ -216,18 +214,19 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
         $builder->where('foo', 1)
             ->orderBy('id', 'desc');
-        $engine->search($builder);
+        $openSearchEngine->search($builder);
     }
 
     public function testSearchSendsCorrectParametersToAlgoliaForWhereInSearch(): void
     {
         if (! method_exists(Builder::class, 'whereIn')) {
-            self::markTestSkipped('Support for whereIn available since 9.0.');
+            $this->markTestSkipped('Support for whereIn available since 9.0.');
         }
+
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
@@ -267,19 +266,20 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
         $builder->where('foo', 1)
             ->whereIn('bar', [1, 2])
             ->orderBy('id', 'desc');
-        $engine->search($builder);
+        $openSearchEngine->search($builder);
     }
 
     public function testSearchSendsCorrectParametersToAlgoliaForEmptyWhereInSearch(): void
     {
         if (! method_exists(Builder::class, 'whereIn')) {
-            self::markTestSkipped('Support for whereIn available since 9.0.');
+            $this->markTestSkipped('Support for whereIn available since 9.0.');
         }
+
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
@@ -319,18 +319,18 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
         $builder = new Builder(new SearchableModel(), 'zonda');
         $builder->where('foo', 1)
             ->whereIn('bar', [])
             ->orderBy('id', 'desc');
-        $engine->search($builder);
+        $openSearchEngine->search($builder);
     }
 
     public function testMapCorrectlyMapsResultsToModels(): void
     {
         $client = m::mock(Client::class);
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
 
         $model = m::mock(SearchableModel::class);
         $model->shouldReceive('getScoutModelsByIds')
@@ -342,7 +342,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $builder = m::mock(Builder::class);
 
-        $results = $engine->map($builder, [
+        $results = $openSearchEngine->map($builder, [
             'nbHits' => 1,
             'hits' => [
                 [
@@ -352,13 +352,13 @@ final class OpenSearchEngineTest extends TestCase
             ],
         ], $model);
 
-        self::assertCount(1, $results);
+        $this->assertCount(1, $results);
     }
 
     public function testMapMethodRespectsOrder(): void
     {
         $client = m::mock(Client::class);
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
 
         $model = m::mock(SearchableModel::class);
         $model->shouldReceive('getScoutModelsByIds')
@@ -379,7 +379,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $builder = m::mock(Builder::class);
 
-        $results = $engine->map($builder, [
+        $results = $openSearchEngine->map($builder, [
             'nbHits' => 4,
             'hits' => [
                 [
@@ -401,11 +401,11 @@ final class OpenSearchEngineTest extends TestCase
             ],
         ], $model);
 
-        self::assertCount(4, $results);
+        $this->assertCount(4, $results);
 
         // It's important we assert with array keys to ensure
         // they have been reset after sorting.
-        self::assertSame([
+        $this->assertSame([
             0 => [
                 'id' => 1,
             ],
@@ -424,10 +424,11 @@ final class OpenSearchEngineTest extends TestCase
     public function testLazyMapCorrectlyMapsResultsToModels(): void
     {
         if (! method_exists(Builder::class, 'cursor')) {
-            self::markTestSkipped('Support for cursor available since 9.0.');
+            $this->markTestSkipped('Support for cursor available since 9.0.');
         }
+
         $client = m::mock(Client::class);
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
 
         $model = m::mock(SearchableModel::class);
         $model->shouldReceive('queryScoutModelsByIds->cursor')
@@ -439,7 +440,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $builder = m::mock(Builder::class);
 
-        $results = $engine->lazyMap($builder, [
+        $results = $openSearchEngine->lazyMap($builder, [
             'nbHits' => 1,
             'hits' => [
                 [
@@ -449,16 +450,17 @@ final class OpenSearchEngineTest extends TestCase
             ],
         ], $model);
 
-        self::assertCount(1, $results);
+        $this->assertCount(1, $results);
     }
 
     public function testLazyMapMethodRespectsOrder(): void
     {
         if (! method_exists(Builder::class, 'cursor')) {
-            self::markTestSkipped('Support for cursor available since 9.0.');
+            $this->markTestSkipped('Support for cursor available since 9.0.');
         }
+
         $client = m::mock(Client::class);
-        $engine = new OpenSearchEngine($client);
+        $openSearchEngine = new OpenSearchEngine($client);
 
         $model = m::mock(SearchableModel::class);
         $model->shouldReceive('queryScoutModelsByIds->cursor')
@@ -479,7 +481,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $builder = m::mock(Builder::class);
 
-        $results = $engine->lazyMap($builder, [
+        $results = $openSearchEngine->lazyMap($builder, [
             'hits' => [
                 [
                     '_id' => 1,
@@ -500,11 +502,11 @@ final class OpenSearchEngineTest extends TestCase
             ],
         ], $model);
 
-        self::assertCount(4, $results);
+        $this->assertCount(4, $results);
 
         // It's important we assert with array keys to ensure
         // they have been reset after sorting.
-        self::assertSame([
+        $this->assertSame([
             0 => [
                 'id' => 1,
             ],
@@ -523,7 +525,7 @@ final class OpenSearchEngineTest extends TestCase
     public function testAModelIsIndexedWithACustomAlgoliaKey(): void
     {
         $client = m::mock(Client::class);
-        $model = new CustomKeySearchableModel([
+        $customKeySearchableModel = new CustomKeySearchableModel([
             'id' => 1,
         ]);
         $client->shouldReceive('bulk')
@@ -537,16 +539,15 @@ final class OpenSearchEngineTest extends TestCase
                             '_id' => 'my-opensearch-key.1',
                         ],
                     ],
-                    array_merge([
+                    [
                         'id' => 1,
-                    ], [
-                        $model->getScoutKeyName() => $model->getScoutKey(),
-                    ]),
+                        $customKeySearchableModel->getScoutKeyName() => $customKeySearchableModel->getScoutKey(),
+                    ],
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
-        $engine->update(Collection::make([$model]));
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->update(Collection::make([$customKeySearchableModel]));
     }
 
     public function testAModelIsRemovedWithACustomAlgoliaKey(): void
@@ -566,8 +567,8 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ]);
 
-        $engine = new OpenSearchEngine($client);
-        $engine->delete(Collection::make([
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete(Collection::make([
             new CustomKeySearchableModel([
                 'id' => 1,
             ]),
@@ -592,8 +593,8 @@ final class OpenSearchEngineTest extends TestCase
                 ],
             ])
             ->andReturn('table');
-        $engine = new OpenSearchEngine($client);
-        $engine->flush($model);
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->flush($model);
     }
 
     public function testUpdateEmptySearchableArrayDoesNotAddObjectsToIndex(): void
@@ -601,15 +602,17 @@ final class OpenSearchEngineTest extends TestCase
         $client = m::mock(Client::class);
 
         $client->shouldNotReceive('bulk');
-        $engine = new OpenSearchEngine($client);
-        $engine->update(Collection::make([new EmptySearchableModel()]));
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->update(Collection::make([new EmptySearchableModel()]));
     }
 
     public function testUpdateEmptySearchableArrayFromSoftDeletedModelDoesNotAddObjectsToIndex(): void
     {
         $client = m::mock(Client::class);
         $client->shouldNotReceive('bulk');
-        $engine = new OpenSearchEngine($client, true);
-        $engine->update(Collection::make([new SoftDeletedEmptySearchableModel()]));
+
+        $openSearchEngine = new OpenSearchEngine($client, true);
+        $openSearchEngine->update(Collection::make([new SoftDeletedEmptySearchableModel()]));
     }
 }
