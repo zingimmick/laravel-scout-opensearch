@@ -55,10 +55,10 @@ final class ScoutTest extends TestCase
         SearchableModel::query()->create([
             'name' => 'not matched',
         ]);
-        sleep(1);
+        sleep(2);
         $this->assertCount(6, SearchableModel::search('test')->get());
         SearchableModel::query()->firstOrFail()->delete();
-        sleep(1);
+        sleep(2);
         $this->assertCount(5, SearchableModel::search('test')->get());
         $this->assertCount(1, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
@@ -67,7 +67,7 @@ final class ScoutTest extends TestCase
 
         $this->assertCount(5, SearchableModel::search('test')->keys());
         SearchableModel::removeAllFromSearch();
-        sleep(1);
+        sleep(2);
         $this->assertCount(0, SearchableModel::search('test')->get());
         $this->assertCount(0, SearchableModel::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
@@ -88,7 +88,7 @@ final class ScoutTest extends TestCase
         SearchableModel::query()->create([
             'name' => 'test search 3',
         ]);
-        sleep(1);
+        sleep(2);
         $this->assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
         $this->assertSame(1, SearchableModel::search('test')->orderBy('id')->first()->getKey());
         $this->assertSame(3, SearchableModel::search('test')->orderBy('id', 'desc')->first()->getKey());
@@ -111,7 +111,7 @@ final class ScoutTest extends TestCase
         SearchableModel::query()->create([
             'name' => 'nothing',
         ]);
-        sleep(1);
+        sleep(2);
         $this->assertCount(3, SearchableModel::search('test')->get());
         $this->assertCount(2, SearchableModel::search('test')->where('is_visible', 1)->get());
         if (method_exists(Builder::class, 'whereIn')) {

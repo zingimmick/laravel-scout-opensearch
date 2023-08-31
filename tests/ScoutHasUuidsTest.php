@@ -66,10 +66,10 @@ final class ScoutHasUuidsTest extends TestCase
         SearchableModelHasUuids::query()->create([
             'name' => 'not matched',
         ]);
-        sleep(1);
+        sleep(2);
         $this->assertCount(6, SearchableModelHasUuids::search('test')->get());
         SearchableModelHasUuids::query()->firstOrFail()->delete();
-        sleep(1);
+        sleep(2);
         $this->assertCount(5, SearchableModelHasUuids::search('test')->get());
         $this->assertCount(1, SearchableModelHasUuids::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
@@ -78,7 +78,7 @@ final class ScoutHasUuidsTest extends TestCase
 
         $this->assertCount(5, SearchableModelHasUuids::search('test')->keys());
         SearchableModelHasUuids::removeAllFromSearch();
-        sleep(1);
+        sleep(2);
         $this->assertCount(0, SearchableModelHasUuids::search('test')->get());
         $this->assertCount(0, SearchableModelHasUuids::search('test')->paginate(2, 'page', 3)->items());
         if (method_exists(Builder::class, 'cursor')) {
@@ -105,7 +105,7 @@ final class ScoutHasUuidsTest extends TestCase
         SearchableModelHasUuids::query()->create([
             'name' => 'nothing',
         ]);
-        sleep(1);
+        sleep(2);
         $this->assertCount(3, SearchableModelHasUuids::search('test')->get());
         $this->assertCount(2, SearchableModelHasUuids::search('test')->where('is_visible', 1)->get());
         if (method_exists(Builder::class, 'whereIn')) {
