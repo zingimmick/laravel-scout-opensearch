@@ -616,7 +616,6 @@ final class OpenSearchEngineTest extends TestCase
         $openSearchEngine->update(Collection::make([new SoftDeletedEmptySearchableModel()]));
     }
 
-
     public function testMapWithoutHits(): void
     {
         $client = m::mock(Client::class);
@@ -634,7 +633,6 @@ final class OpenSearchEngineTest extends TestCase
 
         $this->assertCount(0, $results);
     }
-
 
     public function testLazyMapWithoutHits(): void
     {
