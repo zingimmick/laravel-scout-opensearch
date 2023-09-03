@@ -17,6 +17,7 @@ use OpenSearch\Client;
 use Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\CustomKeySearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\EmptySearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableAndSoftDeletesModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SoftDeletedEmptySearchableModel;
 
@@ -59,6 +60,55 @@ final class OpenSearchEngineTest extends TestCase
 
         $openSearchEngine = new OpenSearchEngine($client);
         $openSearchEngine->update(Collection::make([$searchableModel]));
+    }
+
+    public function testUpdateWithSoftDeletes(): void
+    {
+        $client = m::mock(Client::class);
+        $searchableModel = new SearchableAndSoftDeletesModel([
+            'id' => 1,
+        ]);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    [
+                        'index' => [
+                            '_index' => 'table',
+                            '_id' => 1,
+                        ],
+                    ],
+                    [
+                        'id' => 1,
+                        '__soft_deleted' =>0,
+                        $searchableModel->getScoutKeyName() => $searchableModel->getScoutKey(),
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client,true);
+        $openSearchEngine->update(Collection::make([$searchableModel]));
+    }
+
+    public function testUpdateEmpty()
+    {
+        $client = m::mock(Client::class);
+        $client->shouldNotReceive('bulk')
+        ;
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->update(Collection::make([]));
+    }
+
+    public function testDeleteEmpty()
+    {
+        $client = m::mock(Client::class);
+        $client->shouldNotReceive('bulk')
+        ;
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete(Collection::make([]));
     }
 
     public function testDeleteRemovesObjectsToIndex(): void
@@ -629,7 +679,12 @@ final class OpenSearchEngineTest extends TestCase
 
         $results = $openSearchEngine->map($builder, [
             'nbHits' => 1,
+            'hits'=>null
         ], $model);
+
+        $this->assertCount(0, $results);
+
+        $results = $openSearchEngine->map($builder, null, $model);
 
         $this->assertCount(0, $results);
     }
@@ -647,7 +702,12 @@ final class OpenSearchEngineTest extends TestCase
 
         $results = $openSearchEngine->lazyMap($builder, [
             'nbHits' => 1,
+            'hits'=>null
         ], $model);
+
+        $this->assertCount(0, $results);
+
+        $results = $openSearchEngine->lazyMap($builder, null, $model);
 
         $this->assertCount(0, $results);
     }
