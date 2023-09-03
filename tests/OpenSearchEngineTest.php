@@ -615,4 +615,42 @@ final class OpenSearchEngineTest extends TestCase
         $openSearchEngine = new OpenSearchEngine($client, true);
         $openSearchEngine->update(Collection::make([new SoftDeletedEmptySearchableModel()]));
     }
+
+
+    public function testMapWithoutHits(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('newCollection')
+            ->andReturn($models = Collection::make());
+
+        $builder = m::mock(Builder::class);
+
+        $results = $openSearchEngine->map($builder, [
+            'nbHits' => 1,
+        ], $model);
+
+        $this->assertCount(0, $results);
+    }
+
+
+    public function testLazyMapWithoutHits(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('newCollection')
+            ->andReturn($models = Collection::make());
+
+        $builder = m::mock(Builder::class);
+
+        $results = $openSearchEngine->lazyMap($builder, [
+            'nbHits' => 1,
+        ], $model);
+
+        $this->assertCount(0, $results);
+    }
 }
