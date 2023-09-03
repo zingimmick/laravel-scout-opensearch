@@ -65,7 +65,7 @@ final class OpenSearchEngineTest extends TestCase
     public function testUpdateWithSoftDeletes(): void
     {
         $client = m::mock(Client::class);
-        $searchableModel = new SearchableAndSoftDeletesModel([
+        $searchableAndSoftDeletesModel = new SearchableAndSoftDeletesModel([
             'id' => 1,
         ]);
         $client->shouldReceive('bulk')
@@ -81,31 +81,29 @@ final class OpenSearchEngineTest extends TestCase
                     ],
                     [
                         'id' => 1,
-                        '__soft_deleted' =>0,
-                        $searchableModel->getScoutKeyName() => $searchableModel->getScoutKey(),
+                        '__soft_deleted' => 0,
+                        $searchableAndSoftDeletesModel->getScoutKeyName() => $searchableAndSoftDeletesModel->getScoutKey(),
                     ],
                 ],
             ]);
 
-        $openSearchEngine = new OpenSearchEngine($client,true);
-        $openSearchEngine->update(Collection::make([$searchableModel]));
+        $openSearchEngine = new OpenSearchEngine($client, true);
+        $openSearchEngine->update(Collection::make([$searchableAndSoftDeletesModel]));
     }
 
-    public function testUpdateEmpty()
+    public function testUpdateEmpty(): void
     {
         $client = m::mock(Client::class);
-        $client->shouldNotReceive('bulk')
-        ;
+        $client->shouldNotReceive('bulk');
 
         $openSearchEngine = new OpenSearchEngine($client);
         $openSearchEngine->update(Collection::make([]));
     }
 
-    public function testDeleteEmpty()
+    public function testDeleteEmpty(): void
     {
         $client = m::mock(Client::class);
-        $client->shouldNotReceive('bulk')
-        ;
+        $client->shouldNotReceive('bulk');
 
         $openSearchEngine = new OpenSearchEngine($client);
         $openSearchEngine->delete(Collection::make([]));
@@ -679,7 +677,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $results = $openSearchEngine->map($builder, [
             'nbHits' => 1,
-            'hits'=>null
+            'hits' => null,
         ], $model);
 
         $this->assertCount(0, $results);
@@ -702,7 +700,7 @@ final class OpenSearchEngineTest extends TestCase
 
         $results = $openSearchEngine->lazyMap($builder, [
             'nbHits' => 1,
-            'hits'=>null
+            'hits' => null,
         ], $model);
 
         $this->assertCount(0, $results);
