@@ -113,6 +113,11 @@ final class ScoutHasUuidsTest extends TestCase
             $this->assertCount(3, SearchableModelHasUuids::search('test')->whereIn('is_visible', [0, 1])->get());
             $this->assertCount(0, SearchableModelHasUuids::search('test')->whereIn('is_visible', [])->get());
         }
+
+        if (method_exists(Builder::class, 'whereNotIn')) {
+            $this->assertCount(3, SearchableModelHasUuids::search('test')->whereNotIn('is_visible', [])->get());
+            $this->assertCount(0, SearchableModelHasUuids::search('test')->whereNotIn('is_visible', [0, 1])->get());
+        }
     }
 
     public function testCallback(): void
