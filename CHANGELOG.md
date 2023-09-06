@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.3.0 - 2023-09-06
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Exciting New Features 🎉
+
+- Add "whereNotIn" native support by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/73
+
+#### Other Changes
+
+- Remove errors from phpstan.neon ignore errors by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/65
+- Remove skipped rules on $rectorConfig->skip() are no longer exists by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/67
+- Increase sleep time for test by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/69
+- Fix badge url by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/70
+- Improve test coverage by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/71
+- Add AWS configuration examples by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/74
+
+**Full Changelog**: https://github.com/zingimmick/laravel-scout-opensearch/compare/3.2.0...3.3.0
+
 ## 3.2.0 - 2023-06-15
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
