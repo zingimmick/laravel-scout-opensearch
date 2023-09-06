@@ -709,4 +709,24 @@ final class OpenSearchEngineTest extends TestCase
 
         $this->assertCount(0, $results);
     }
+
+    public function testOpenSearchClientMethod()
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+        $client->shouldReceive('nodes')->withNoArgs()->once();
+        $openSearchEngine->nodes();
+    }
+
+
+
+    public function testMapIds(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+
+        $results = $openSearchEngine->mapIds(null);
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $results);
+    }
 }
