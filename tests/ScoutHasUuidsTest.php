@@ -7,6 +7,7 @@ namespace Zing\LaravelScout\OpenSearch\Tests;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Scout\Builder;
+use OpenSearch\Client;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModelHasUuids;
 
 /**
@@ -112,5 +113,38 @@ final class ScoutHasUuidsTest extends TestCase
             $this->assertCount(3, SearchableModelHasUuids::search('test')->whereIn('is_visible', [0, 1])->get());
             $this->assertCount(0, SearchableModelHasUuids::search('test')->whereIn('is_visible', [])->get());
         }
+    }
+
+    public function testCallback(): void
+    {
+        SearchableModelHasUuids::query()->create([
+            'name' => 'test',
+            'is_visible' => 1,
+        ]);
+        SearchableModelHasUuids::query()->create([
+            'name' => 'test',
+            'is_visible' => 1,
+        ]);
+        SearchableModelHasUuids::query()->create([
+            'name' => 'test',
+            'is_visible' => 0,
+        ]);
+        SearchableModelHasUuids::query()->create([
+            'name' => 'nothing',
+        ]);
+        sleep(2);
+        $this->assertCount(
+            3,
+            SearchableModelHasUuids::search('test', static fn (Client $client, $query, $options) => $client->search([
+                'index' => 'searchable_model_has_uuids',
+                'body' => [
+                    'query' => [
+                        'query_string' => [
+                            'query' => $query,
+                        ],
+                    ],
+                ],
+            ])['hits'])->get()
+        );
     }
 }

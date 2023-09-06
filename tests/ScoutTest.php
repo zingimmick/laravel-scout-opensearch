@@ -6,6 +6,7 @@ namespace Zing\LaravelScout\OpenSearch\Tests;
 
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Scout\Builder;
+use OpenSearch\Client;
 
 /**
  * @internal
@@ -118,5 +119,38 @@ final class ScoutTest extends TestCase
             $this->assertCount(3, SearchableModel::search('test')->whereIn('is_visible', [0, 1])->get());
             $this->assertCount(0, SearchableModel::search('test')->whereIn('is_visible', [])->get());
         }
+    }
+
+    public function testCallback(): void
+    {
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => 1,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => 1,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => 0,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'nothing',
+        ]);
+        sleep(2);
+        $this->assertCount(
+            3,
+            SearchableModel::search('test', static fn (Client $client, $query, $options) => $client->search([
+                'index' => 'searchable-model',
+                'body' => [
+                    'query' => [
+                        'query_string' => [
+                            'query' => $query,
+                        ],
+                    ],
+                ],
+            ])['hits'])->get()
+        );
     }
 }

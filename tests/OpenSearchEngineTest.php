@@ -17,6 +17,7 @@ use OpenSearch\Client;
 use Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\CustomKeySearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\EmptySearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableAndSoftDeletesModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SoftDeletedEmptySearchableModel;
 
@@ -59,6 +60,53 @@ final class OpenSearchEngineTest extends TestCase
 
         $openSearchEngine = new OpenSearchEngine($client);
         $openSearchEngine->update(Collection::make([$searchableModel]));
+    }
+
+    public function testUpdateWithSoftDeletes(): void
+    {
+        $client = m::mock(Client::class);
+        $searchableAndSoftDeletesModel = new SearchableAndSoftDeletesModel([
+            'id' => 1,
+        ]);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    [
+                        'index' => [
+                            '_index' => 'table',
+                            '_id' => 1,
+                        ],
+                    ],
+                    [
+                        'id' => 1,
+                        '__soft_deleted' => 0,
+                        $searchableAndSoftDeletesModel->getScoutKeyName() => $searchableAndSoftDeletesModel->getScoutKey(),
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client, true);
+        $openSearchEngine->update(Collection::make([$searchableAndSoftDeletesModel]));
+    }
+
+    public function testUpdateEmpty(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldNotReceive('bulk');
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->update(Collection::make([]));
+    }
+
+    public function testDeleteEmpty(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldNotReceive('bulk');
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete(Collection::make([]));
     }
 
     public function testDeleteRemovesObjectsToIndex(): void
@@ -614,5 +662,71 @@ final class OpenSearchEngineTest extends TestCase
 
         $openSearchEngine = new OpenSearchEngine($client, true);
         $openSearchEngine->update(Collection::make([new SoftDeletedEmptySearchableModel()]));
+    }
+
+    public function testMapWithoutHits(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('newCollection')
+            ->andReturn($models = Collection::make());
+
+        $builder = m::mock(Builder::class);
+
+        $results = $openSearchEngine->map($builder, [
+            'nbHits' => 1,
+            'hits' => null,
+        ], $model);
+
+        $this->assertCount(0, $results);
+
+        $results = $openSearchEngine->map($builder, null, $model);
+
+        $this->assertCount(0, $results);
+    }
+
+    public function testLazyMapWithoutHits(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+
+        $model = m::mock(SearchableModel::class);
+        $model->shouldReceive('newCollection')
+            ->andReturn($models = Collection::make());
+
+        $builder = m::mock(Builder::class);
+
+        $results = $openSearchEngine->lazyMap($builder, [
+            'nbHits' => 1,
+            'hits' => null,
+        ], $model);
+
+        $this->assertCount(0, $results);
+
+        $results = $openSearchEngine->lazyMap($builder, null, $model);
+
+        $this->assertCount(0, $results);
+    }
+
+    public function testOpenSearchClientMethod(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+        $client->shouldReceive('nodes')
+            ->withNoArgs()
+            ->once();
+        $openSearchEngine->nodes();
+    }
+
+    public function testMapIds(): void
+    {
+        $client = m::mock(Client::class);
+        $openSearchEngine = new OpenSearchEngine($client);
+
+        $results = $openSearchEngine->mapIds(null);
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $results);
     }
 }
