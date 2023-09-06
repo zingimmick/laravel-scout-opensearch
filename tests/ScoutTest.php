@@ -142,15 +142,15 @@ final class ScoutTest extends TestCase
         $this->assertCount(
             3,
             SearchableModel::search('test', static fn (Client $client, $query, $options) => $client->search([
-            'index' => 'searchable-model',
-            'body' => [
-                'query' => [
-                    'query_string' => [
-                        'query' => $query,
+                'index' => 'searchable-model',
+                'body' => [
+                    'query' => [
+                        'query_string' => [
+                            'query' => $query,
+                        ],
                     ],
                 ],
-            ],
-        ])['hits'])->get()
+            ])['hits'])->get()
         );
     }
 }
