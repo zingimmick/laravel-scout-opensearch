@@ -236,20 +236,19 @@ final class OpenSearchEngineTest extends TestCase
                 'body' => [
                     'query' => [
                         'bool' => [
-                            'filter' => [
-                                [
-                                    'term' => [
-                                        'foo' => 1,
-                                    ],
-                                ],
-                            ],
                             'must' => [
                                 [
                                     'query_string' => [
                                         'query' => 'zonda',
                                     ],
                                 ],
+                                [
+                                    'term' => [
+                                        'foo' => 1,
+                                    ],
+                                ],
                             ],
+                            'must_not' => [],
                         ],
                     ],
                     'sort' => [
@@ -283,7 +282,12 @@ final class OpenSearchEngineTest extends TestCase
                 'body' => [
                     'query' => [
                         'bool' => [
-                            'filter' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
                                 [
                                     'term' => [
                                         'foo' => 1,
@@ -295,13 +299,7 @@ final class OpenSearchEngineTest extends TestCase
                                     ],
                                 ],
                             ],
-                            'must' => [
-                                [
-                                    'query_string' => [
-                                        'query' => 'zonda',
-                                    ],
-                                ],
-                            ],
+                            'must_not' => [],
                         ],
                     ],
                     'sort' => [
@@ -336,7 +334,12 @@ final class OpenSearchEngineTest extends TestCase
                 'body' => [
                     'query' => [
                         'bool' => [
-                            'filter' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
                                 [
                                     'term' => [
                                         'foo' => 1,
@@ -348,13 +351,7 @@ final class OpenSearchEngineTest extends TestCase
                                     ],
                                 ],
                             ],
-                            'must' => [
-                                [
-                                    'query_string' => [
-                                        'query' => 'zonda',
-                                    ],
-                                ],
-                            ],
+                            'must_not' => [],
                         ],
                     ],
                     'sort' => [

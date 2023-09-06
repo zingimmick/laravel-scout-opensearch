@@ -148,41 +148,49 @@ class OpenSearchEngine extends Engine
         }
 
         $query = $builder->query;
-        $options['query'] = [
-            'query_string' => [
-                'query' => $query,
-            ],
-        ];
-        $filter = collect($builder->wheres)
+        $must = collect([
+            [
+                'query_string' => [
+                    'query' => $query,
+                ],
+            ]
+        ]);
+        $must = $must->merge(collect($builder->wheres)
             ->map(static fn ($value, $key): array => [
                 'term' => [
                     $key => $value,
                 ],
-            ])->values();
+            ])->values())->values();
 
         if (property_exists($builder, 'whereIns')) {
-            $filter = $filter->merge(collect($builder->whereIns)->map(static fn ($values, $key): array => [
+            $must = $must->merge(collect($builder->whereIns)->map(static fn ($values, $key): array => [
                 'terms' => [
                     $key => $values,
                 ],
             ])->values())->values();
         }
 
-        if ($filter->isNotEmpty()) {
-            $options['query'] = [
-                'bool' => [
-                    'filter' => $filter->all(),
-                    'must' => [$options['query']],
+        $mustNot = collect();
+        if (property_exists($builder, 'whereNotIns')) {
+            $mustNot = $mustNot->merge(collect($builder->whereNotIns)->map(static fn ($values, $key): array => [
+                'terms' => [
+                    $key => $values,
                 ],
-            ];
+            ])->values())->values();
         }
+
+        $options['query'] = [
+            'bool' => [
+                'must' => $must->all(),
+                'must_not'=>$mustNot->all()
+            ],
+        ];
 
         $options['sort'] = collect($builder->orders)->map(static fn ($order): array => [
             $order['column'] => [
                 'order' => $order['direction'],
             ],
         ])->all();
-
         $result = $this->client->search([
             'index' => $index,
             'body' => $options,
