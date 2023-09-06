@@ -14,7 +14,7 @@ use Laravel\Scout\Jobs\RemoveableScoutCollection;
 use OpenSearch\Client;
 
 /**
- * @mixin Client
+ * @mixin \OpenSearch\Client
  */
 class OpenSearchEngine extends Engine
 {

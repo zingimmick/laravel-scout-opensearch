@@ -121,7 +121,8 @@ final class ScoutTest extends TestCase
         }
     }
 
-    public function testCallback(){
+    public function testCallback(): void
+    {
         SearchableModel::query()->create([
             'name' => 'test',
             'is_visible' => 1,
@@ -138,17 +139,18 @@ final class ScoutTest extends TestCase
             'name' => 'nothing',
         ]);
         sleep(2);
-        $this->assertCount(3, SearchableModel::search('test',function (Client $client,$query,$options){
-            return $client->search([
-                'index' => 'searchable-model',
-                'body' => [
-                    'query'=>[
-                        'query_string' => [
-                            'query' => $query,
-                        ],
-                    ]
+        $this->assertCount(
+            3,
+            SearchableModel::search('test', static fn (Client $client, $query, $options) => $client->search([
+            'index' => 'searchable-model',
+            'body' => [
+                'query' => [
+                    'query_string' => [
+                        'query' => $query,
+                    ],
                 ],
-            ])['hits'];
-        })->get());
+            ],
+        ])['hits'])->get()
+        );
     }
 }

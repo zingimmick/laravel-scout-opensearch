@@ -115,7 +115,8 @@ final class ScoutHasUuidsTest extends TestCase
         }
     }
 
-    public function testCallback(){
+    public function testCallback(): void
+    {
         SearchableModelHasUuids::query()->create([
             'name' => 'test',
             'is_visible' => 1,
@@ -132,17 +133,18 @@ final class ScoutHasUuidsTest extends TestCase
             'name' => 'nothing',
         ]);
         sleep(2);
-        $this->assertCount(3, SearchableModelHasUuids::search('test',function (Client $client,$query,$options){
-            return $client->search([
-                'index' => 'searchable_model_has_uuids',
-                'body' => [
-                    'query'=>[
-                        'query_string' => [
-                            'query' => $query,
-                        ],
-                    ]
+        $this->assertCount(
+            3,
+            SearchableModelHasUuids::search('test', static fn (Client $client, $query, $options) => $client->search([
+            'index' => 'searchable_model_has_uuids',
+            'body' => [
+                'query' => [
+                    'query_string' => [
+                        'query' => $query,
+                    ],
                 ],
-            ])['hits'];
-        })->get());
+            ],
+        ])['hits'])->get()
+        );
     }
 }
