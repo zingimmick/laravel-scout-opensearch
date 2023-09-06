@@ -153,7 +153,7 @@ class OpenSearchEngine extends Engine
                 'query_string' => [
                     'query' => $query,
                 ],
-            ]
+            ],
         ]);
         $must = $must->merge(collect($builder->wheres)
             ->map(static fn ($value, $key): array => [
@@ -182,7 +182,7 @@ class OpenSearchEngine extends Engine
         $options['query'] = [
             'bool' => [
                 'must' => $must->all(),
-                'must_not'=>$mustNot->all()
+                'must_not' => $mustNot->all(),
             ],
         ];
 
