@@ -13,11 +13,6 @@ class SearchableAndSoftDeletesModel extends Model
     use Searchable;
     use SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
     protected $fillable = ['id'];
 
     public function searchableAs(): string
