@@ -59,6 +59,9 @@ jobs:
         with:
           dependency-versions: ${{ matrix.stability }}
 
+      - name: Wait for Search server
+        run: php ./.github/wait_for_search_server.php
+
       - name: Execute tests
         run: composer run-script test:phpunit -- --coverage-clover coverage.xml
 

@@ -11,7 +11,6 @@ class SearchableModel extends Model
 {
     use Searchable;
 
-
     protected $fillable = ['id'];
 
     public function searchableAs(): string

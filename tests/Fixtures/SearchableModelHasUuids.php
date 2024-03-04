@@ -34,6 +34,5 @@ class SearchableModelHasUuids extends Model
         ];
     }
 
-
     protected $fillable = ['name', 'is_visible'];
 }
