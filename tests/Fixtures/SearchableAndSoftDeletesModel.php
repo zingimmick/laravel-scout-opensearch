@@ -13,7 +13,6 @@ class SearchableAndSoftDeletesModel extends Model
     use Searchable;
     use SoftDeletes;
 
-
     protected $fillable = ['id'];
 
     public function searchableAs(): string

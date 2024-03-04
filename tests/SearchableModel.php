@@ -36,6 +36,5 @@ class SearchableModel extends Model
         ];
     }
 
-
     protected $fillable = ['name', 'is_visible'];
 }
