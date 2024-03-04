@@ -21,7 +21,7 @@ class SearchableModel extends Model
     /**
      * @return array<string, mixed>
      */
-    public function scoutMetadata()
+    public function scoutMetadata(): array
     {
         return [];
     }
