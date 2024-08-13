@@ -30,7 +30,7 @@ class OpenSearchEngine extends Engine
     /**
      * Update the given model in the index.
      *
-     * @param \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model> $models
+     * @param \Illuminate\Database\Eloquent\Collection<int, covariant \Illuminate\Database\Eloquent\Model> $models
      */
     public function update($models): void
     {
@@ -80,7 +80,7 @@ class OpenSearchEngine extends Engine
     /**
      * Remove the given model from the index.
      *
-     * @param \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model> $models
+     * @param \Illuminate\Database\Eloquent\Collection<int, covariant \Illuminate\Database\Eloquent\Model> $models
      */
     public function delete($models): void
     {
