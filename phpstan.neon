@@ -7,7 +7,6 @@ parameters:
     paths:
         - src
         - tests
-    checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKey\(\).#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::getScoutKeyName\(\).#'
