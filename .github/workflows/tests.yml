@@ -47,12 +47,8 @@ jobs:
         name: Require packages for PHP 8.1
         run: composer require orchestra/testbench:'^6.23 || ^7.0 || ^8.0 || ^9.0' --no-update --dev
 
-      - if: matrix.php == '8.2'
-        name: Require packages for PHP 8.2
-        run: composer require orchestra/testbench:'^6.23 || ^7.0 || ^8.0 || ^9.0' nesbot/carbon:^2.62.1 --no-update --dev
-
-      - if: matrix.php == '8.3'
-        name: Require packages for PHP 8.3
+      - if: matrix.php >= '8.2'
+        name: Require packages for PHP greater than 8.2
         run: composer require orchestra/testbench:'^6.23 || ^7.0 || ^8.0 || ^9.0' nesbot/carbon:^2.62.1 --no-update --dev
 
       - name: Install dependencies
