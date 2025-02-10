@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.4.2 - 2025-02-10
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Other Changes
+
+* Allow Laravel 11 in GitHub action tests by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/90
+* Fix PHPStan issues by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/101
+* Support for PHP 8.4 by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/100
+* Allow nesbot/carbon 3.4 in tests action by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/103
+* Update license copyright year(s) by @github-actions in https://github.com/zingimmick/laravel-scout-opensearch/pull/105
+* Update nunomaduro/larastan requirement from ^1.0 || ^2.0 to ^1.0 || ^2.0 || ^3.0 by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/106
+* Use larastan/larastan instead of nunomaduro/larastan by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/107
+
+**Full Changelog**: https://github.com/zingimmick/laravel-scout-opensearch/compare/3.4.1...3.4.2
+
 ## 3.4.1 - 2024-04-09
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
