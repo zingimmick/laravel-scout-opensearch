@@ -6,6 +6,7 @@ namespace Zing\LaravelScout\OpenSearch\Engines;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
@@ -149,7 +150,9 @@ class OpenSearchEngine extends Engine
         }
 
         if ($builder->callback instanceof \Closure) {
-            return \call_user_func($builder->callback, $this->client, $builder->query, $options);
+            $result = \call_user_func($builder->callback, $this->client, $builder->query, $options);
+
+            return Arr::isAssoc($result['hits'] ?? []) ? $result['hits'] : $result;
         }
 
         $query = $builder->query;

@@ -151,5 +151,18 @@ final class ScoutHasUuidsTest extends TestCase
                 ],
             ])['hits'])->get()
         );
+        $this->assertCount(
+            3,
+            SearchableModelHasUuids::search('test', static fn (Client $client, $query, $options) => $client->search([
+                'index' => 'searchable_model_has_uuids',
+                'body' => [
+                    'query' => [
+                        'query_string' => [
+                            'query' => $query,
+                        ],
+                    ],
+                ],
+            ]))->get()
+        );
     }
 }
