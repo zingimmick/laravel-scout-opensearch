@@ -18,7 +18,6 @@ return static function (\Rector\Config\RectorConfig $rectorConfig): void {
         RenameVariableToMatchMethodCallReturnTypeRector::class,
         RenameParamToMatchTypeRector::class,
         PrivatizeLocalGetterToPropertyRector::class,
-        AssertCountWithZeroToAssertEmptyRector::class,
     ]);
     $rectorConfig->paths([__DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/ecs.php', __DIR__ . '/rector.php']);
 };
