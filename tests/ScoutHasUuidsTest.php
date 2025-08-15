@@ -17,7 +17,7 @@ final class ScoutHasUuidsTest extends TestCase
 {
     use WithFaker;
 
-    public static function setUpBeforeClass(): void
+    public static function setUpBeforeClass(): void 
     {
         if (! trait_exists(HasUuids::class)) {
             self::markTestSkipped('Support for HasUuids available since 9.0.');
