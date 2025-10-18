@@ -363,12 +363,11 @@ class OpenSearchEngine extends Engine
     /**
      * Dynamically call the OpenSearch client instance.
      *
-     * @param string $method
      * @param array<int, mixed> $parameters
      *
      * @return mixed
      */
-    public function __call($method, $parameters)
+    public function __call(string $method, array $parameters)
     {
         return $this->client->{$method}(...$parameters);
     }
