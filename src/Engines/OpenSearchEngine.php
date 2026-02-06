@@ -124,9 +124,9 @@ class OpenSearchEngine extends Engine
     /**
      * Perform the given search on the engine.
      *
+     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      * @param int $perPage
      * @param int $page
-     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      */
     public function paginate(Builder $builder, $perPage, $page): mixed
     {
@@ -139,8 +139,8 @@ class OpenSearchEngine extends Engine
     /**
      * Perform the given search on the engine.
      *
-     * @param array<string, mixed> $options
      * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
+     * @param array<string, mixed> $options
      */
     protected function performSearch(Builder $builder, array $options = []): mixed
     {
@@ -228,9 +228,9 @@ class OpenSearchEngine extends Engine
     /**
      * Map the given results to instances of the given model.
      *
+     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      * @param array{hits: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
-     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model>
      */
@@ -260,9 +260,9 @@ class OpenSearchEngine extends Engine
     /**
      * Map the given results to instances of the given model via a lazy collection.
      *
+     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      * @param array{hits: mixed[]|null}|null $results
      * @param \Illuminate\Database\Eloquent\Model $model
-     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      *
      * @return \Illuminate\Support\LazyCollection<int, \Illuminate\Database\Eloquent\Model>
      */
