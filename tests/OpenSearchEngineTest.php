@@ -30,6 +30,7 @@ final class OpenSearchEngineTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
         Config::set('scout.after_commit', false);
         Config::set('scout.soft_delete', false);
     }
