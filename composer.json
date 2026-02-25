@@ -47,14 +47,6 @@
             "Zing\\LaravelScout\\OpenSearch\\Tests\\": "tests"
         }
     },
-    "conflict": {
-        "laravel/scout": ">=10.24.0",
-        "laravel/framework": ">10.50.0",
-        "ezimuel/ringphp": ">1.4.0",
-        "laravel/tinker": ">2.11.0",
-        "nette/schema": ">1.3.4",
-        "psy/psysh": ">0.12.19"
-    },
     "scripts": {
         "lint:rector": "@fix:rector --dry-run",
         "lint:ecs": "ecs check --ansi",

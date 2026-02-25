@@ -30,12 +30,15 @@ final class OpenSearchEngineTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        Config::set('scout.after_commit', false);
-        Config::set('scout.soft_delete', false);
+        Config::shouldReceive('get')->with('scout.after_commit', m::any())->andReturn(false);
+        Config::shouldReceive('get')->with('scout.soft_delete', m::any())->andReturn(false);
+        Config::shouldReceive('get')->with('scout.jobs.tries', m::any())->andReturn(null);
+        Config::shouldReceive('get')->with('scout.jobs.backoff', m::any())->andReturn(null);
+        Config::shouldReceive('get')->with('scout.jobs.max_exceptions', m::any())->andReturn(null);
+        Container::getInstance()->bind('config',function (){
+            return Config::getFacadeRoot();
+        });
     }
-    protected function getEnvironmentSetUp($app): void{}
 
     public function testUpdateAddsObjectsToIndex(): void
     {
