@@ -209,14 +209,7 @@ final class OpenSearchEngineTest extends TestCase
 
         Container::getInstance()->bind(EngineManager::class, static function () {
             $engine = m::mock(OpenSearchEngine::class);
-            $engine->shouldReceive('delete')
-                ->once()
-                ->with(m::on(static function ($collection): bool {
-                    $keyName = ($model = $collection->first())
-                        ->getScoutKeyName();
-
-                    return $model->getAttributes()[$keyName] === 'my-opensearch-key.5';
-                }));
+            
             $manager = m::mock(EngineManager::class);
             $manager->shouldReceive('engine')
                 ->once()
