@@ -35,6 +35,7 @@ final class OpenSearchEngineTest extends TestCase
         Config::set('scout.after_commit', false);
         Config::set('scout.soft_delete', false);
     }
+    protected function getEnvironmentSetUp($app): void{}
 
     public function testUpdateAddsObjectsToIndex(): void
     {
