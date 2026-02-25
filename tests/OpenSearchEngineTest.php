@@ -199,17 +199,20 @@ final class OpenSearchEngineTest extends TestCase
             $this->markTestSkipped('Support for RemoveFromSearch available since 9.0.');
         }
 
-        $job = new RemoveFromSearch(Collection::make([
+        $models = Collection::make([
             new CustomKeySearchableModel([
                 'id' => 5,
             ]),
-        ]));
+        ]);
+        $job = new RemoveFromSearch($models);
 
         $job = unserialize(serialize($job));
 
-        Container::getInstance()->bind(EngineManager::class, static function () {
+        Container::getInstance()->bind(EngineManager::class, static function () use ($models) {
             $engine = m::mock(OpenSearchEngine::class);
-
+            $engine->shouldReceive('delete')
+                ->once()
+                ->with($models);
             $manager = m::mock(EngineManager::class);
             $manager->shouldReceive('engine')
                 ->once()
