@@ -209,7 +209,7 @@ final class OpenSearchEngineTest extends TestCase
 
         Container::getInstance()->bind(EngineManager::class, static function () {
             $engine = m::mock(OpenSearchEngine::class);
-            
+
             $manager = m::mock(EngineManager::class);
             $manager->shouldReceive('engine')
                 ->once()
