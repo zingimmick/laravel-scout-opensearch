@@ -89,7 +89,6 @@ class OpenSearchEngine extends Engine
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model $model */
         $model = $models->first();
 
         $keys = $models instanceof RemoveableScoutCollection

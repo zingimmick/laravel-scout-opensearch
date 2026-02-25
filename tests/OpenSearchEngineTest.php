@@ -35,9 +35,7 @@ final class OpenSearchEngineTest extends TestCase
         Config::shouldReceive('get')->with('scout.jobs.tries', m::any())->andReturn(null);
         Config::shouldReceive('get')->with('scout.jobs.backoff', m::any())->andReturn(null);
         Config::shouldReceive('get')->with('scout.jobs.max_exceptions', m::any())->andReturn(null);
-        Container::getInstance()->bind('config',function (){
-            return Config::getFacadeRoot();
-        });
+        Container::getInstance()->bind('config', static fn () => Config::getFacadeRoot());
     }
 
     public function testUpdateAddsObjectsToIndex(): void
