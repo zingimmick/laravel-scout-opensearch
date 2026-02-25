@@ -32,6 +32,10 @@ final class OpenSearchEngineTest extends TestCase
     {
         Config::shouldReceive('get')->with('scout.after_commit', m::any())->andReturn(false);
         Config::shouldReceive('get')->with('scout.soft_delete', m::any())->andReturn(false);
+        Config::shouldReceive('get')->with('scout.jobs.tries', m::any())->andReturn(null);
+        Config::shouldReceive('get')->with('scout.jobs.backoff', m::any())->andReturn(null);
+        Config::shouldReceive('get')->with('scout.jobs.max_exceptions', m::any())->andReturn(null);
+        Container::getInstance()->bind('config', static fn () => Config::getFacadeRoot());
     }
 
     public function testUpdateAddsObjectsToIndex(): void
