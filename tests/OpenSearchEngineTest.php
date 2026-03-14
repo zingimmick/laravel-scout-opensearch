@@ -500,6 +500,7 @@ final class OpenSearchEngineTest extends TestCase
         ], $model);
 
         $this->assertCount(1, $results);
+        $this->assertEquals(['_id'=>1],$results->first()->scoutMetadata());
     }
 
     public function testLazyMapMethodRespectsOrder(): void
