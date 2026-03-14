@@ -70,6 +70,7 @@ abstract class TestCase extends BaseTestCase
                 $table->string('name')
                     ->default('');
                 $table->boolean('is_visible')
+                    ->nullable()
                     ->default(true);
                 $table->timestamps();
                 $table->softDeletes();
@@ -82,6 +83,7 @@ abstract class TestCase extends BaseTestCase
                 $table->string('name')
                     ->default('');
                 $table->boolean('is_visible')
+                    ->nullable()
                     ->default(true);
                 $table->timestamps();
                 $table->softDeletes();

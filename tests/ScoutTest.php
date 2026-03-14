@@ -171,4 +171,28 @@ final class ScoutTest extends TestCase
             ]))->get()
         );
     }
+
+    public function testWhereNull(): void
+    {
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => true,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => false,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => null,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'nothing',
+        ]);
+        sleep(2);
+        $this->assertCount(3, SearchableModel::search('test')->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', true)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', false)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', null)->get());
+    }
 }

@@ -165,11 +165,8 @@ class OpenSearchEngine extends Engine
             ],
         ]);
         $must = $must->merge(collect($builder->wheres)
-            ->map(static fn ($value, $key): array => [
-                'term' => [
-                    $key => $value,
-                ],
-            ])->values())->values();
+            ->map(fn ($value, $key): array => $this->parseWhereFilter($value, $key))
+            ->values())->values();
 
         if (property_exists($builder, 'whereIns')) {
             $must = $must->merge(collect($builder->whereIns)->map(static fn ($values, $key): array => [
@@ -206,6 +203,27 @@ class OpenSearchEngine extends Engine
         ]);
 
         return $result['hits'] ?? null;
+    }
+
+    protected function parseWhereFilter($value, $key): array
+    {
+        if ($value === null) {
+            return [
+                'bool' => [
+                    'must_not' => [
+                        'exists' => [
+                            'field' => $key,
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'term' => [
+                $key => $value,
+            ],
+        ];
     }
 
     /**
