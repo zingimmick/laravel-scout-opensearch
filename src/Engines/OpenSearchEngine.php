@@ -277,11 +277,11 @@ class OpenSearchEngine extends Engine
 
         return $model->getScoutModelsByIds($builder, $objectIds)
             ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
-            ->map(function ($model) use ($results, $objectIdPositions) {
+            ->map(static function ($model) use ($results, $objectIdPositions) {
                 $result = $results['hits'][$objectIdPositions[$model->getScoutKey()]] ?? [];
 
                 foreach ($result as $key => $value) {
-                    if (substr($key, 0, 1) === '_') {
+                    if (str_starts_with($key, '_')) {
                         $model->withScoutMetadata($key, $value);
                     }
                 }
@@ -320,11 +320,11 @@ class OpenSearchEngine extends Engine
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
             ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
-            ->map(function ($model) use ($results, $objectIdPositions) {
+            ->map(static function ($model) use ($results, $objectIdPositions) {
                 $result = $results['hits'][$objectIdPositions[$model->getScoutKey()]] ?? [];
 
                 foreach ($result as $key => $value) {
-                    if (substr($key, 0, 1) === '_') {
+                    if (str_starts_with($key, '_')) {
                         $model->withScoutMetadata($key, $value);
                     }
                 }
