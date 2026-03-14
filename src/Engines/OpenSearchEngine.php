@@ -205,6 +205,11 @@ class OpenSearchEngine extends Engine
         return $result['hits'] ?? null;
     }
 
+    /**
+     * @param mixed $value
+     * @param string $key
+     * @return array[]
+     */
     protected function parseWhereFilter($value, $key): array
     {
         if ($value === null) {
