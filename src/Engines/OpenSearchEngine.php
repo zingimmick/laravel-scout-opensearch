@@ -277,6 +277,17 @@ class OpenSearchEngine extends Engine
 
         return $model->getScoutModelsByIds($builder, $objectIds)
             ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
+            ->map(static function ($model) use ($results, $objectIdPositions) {
+                $result = $results['hits'][$objectIdPositions[$model->getScoutKey()]] ?? [];
+
+                foreach ($result as $key => $value) {
+                    if (str_starts_with($key, '_')) {
+                        $model->withScoutMetadata($key, $value);
+                    }
+                }
+
+                return $model;
+            })
             ->sortBy(static fn ($model): int => $objectIdPositions[$model->getScoutKey()])->values();
     }
 
@@ -309,6 +320,17 @@ class OpenSearchEngine extends Engine
         return $model->queryScoutModelsByIds($builder, $objectIds)
             ->cursor()
             ->filter(static fn ($model): bool => \in_array($model->getScoutKey(), $objectIds, false))
+            ->map(static function ($model) use ($results, $objectIdPositions) {
+                $result = $results['hits'][$objectIdPositions[$model->getScoutKey()]] ?? [];
+
+                foreach ($result as $key => $value) {
+                    if (str_starts_with($key, '_')) {
+                        $model->withScoutMetadata($key, $value);
+                    }
+                }
+
+                return $model;
+            })
             ->sortBy(static fn ($model): int => $objectIdPositions[$model->getScoutKey()])->values();
     }
 

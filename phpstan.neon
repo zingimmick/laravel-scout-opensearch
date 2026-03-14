@@ -18,3 +18,4 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::toSearchableArray\(\).#'
         - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection<int, covariant Illuminate\\Database\\Eloquent\\Model>>::pushSoftDeleteMetadata\(\).#'
         - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection<int, covariant Illuminate\\Database\\Eloquent\\Model>>::getScoutKey\(\).#'
+        - '#Cannot call method scoutMetadata\(\) on Illuminate\\Database\\Eloquent\\Model\|null.#'
