@@ -116,6 +116,8 @@ class OpenSearchEngine extends Engine
     public function search(Builder $builder): mixed
     {
         return $this->performSearch($builder, array_filter([
+            'query' => $this->buildQuery($builder),
+            'sort' => $this->buildSort($builder),
             'size' => $builder->limit,
         ]));
     }
@@ -129,10 +131,12 @@ class OpenSearchEngine extends Engine
      */
     public function paginate(Builder $builder, $perPage, $page): mixed
     {
-        return $this->performSearch($builder, [
+        return $this->performSearch($builder, array_filter([
+            'query' => $this->buildQuery($builder),
+            'sort' => $this->buildSort($builder),
             'size' => $perPage,
             'from' => $perPage * ($page - 1),
-        ]);
+        ]));
     }
 
     /**
@@ -154,6 +158,21 @@ class OpenSearchEngine extends Engine
             return Arr::isAssoc($result['hits'] ?? []) ? $result['hits'] : $result;
         }
 
+        $result = $this->client->search([
+            'index' => $index,
+            'body' => $options,
+        ]);
+
+        return $result['hits'] ?? null;
+    }
+
+    /**
+     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
+     *
+     * @return array<string, array<string, mixed[]>>
+     */
+    protected function buildQuery(Builder $builder): array
+    {
         $query = $builder->query;
 
         /** @var \Illuminate\Support\Collection<int, array{query_string?: array{query: string, term?: array<string, mixed>}}> $must */
@@ -185,24 +204,27 @@ class OpenSearchEngine extends Engine
             ])->values())->values();
         }
 
-        $options['query'] = [
+        return [
             'bool' => [
                 'must' => $must->all(),
                 'must_not' => $mustNot->all(),
             ],
         ];
+    }
 
-        $options['sort'] = collect($builder->orders)->map(static fn ($order): array => [
-            $order['column'] => [
-                'order' => $order['direction'],
-            ],
-        ])->all();
-        $result = $this->client->search([
-            'index' => $index,
-            'body' => $options,
-        ]);
-
-        return $result['hits'] ?? null;
+    /**
+     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
+     *
+     * @return array<array<array{order: mixed}>>
+     */
+    protected function buildSort(Builder $builder): array
+    {
+        return collect($builder->orders)
+            ->map(static fn ($order): array => [
+                $order['column'] => [
+                    'order' => $order['direction'],
+                ],
+            ])->all();
     }
 
     /**
@@ -213,10 +235,17 @@ class OpenSearchEngine extends Engine
      */
     protected function parseWhereFilter($value, $key): array
     {
+        $operator = '=';
+        if (is_numeric($key) && \is_array($value) && \count($value) === 3) {
+            $key = $value['field'];
+            $operator = $value['operator'];
+            $value = $value['value'];
+        }
+
         if ($value === null) {
             return [
                 'bool' => [
-                    'must_not' => [
+                    $operator === '=' ? 'must_not' : 'must' => [
                         'exists' => [
                             'field' => $key,
                         ],
@@ -225,9 +254,74 @@ class OpenSearchEngine extends Engine
             ];
         }
 
+        return match ($operator) {
+            '=' => $this->parseEqualFilter($key, $value),
+            '!=' => $this->parseNotEqualFilter($key, $value),
+            '<', '>', '<=', '>=' => $this->parseRangeFilter($key, $operator, $value),
+            default => throw new \InvalidArgumentException(\sprintf('Unsupported operator [%s].', $operator)),
+        };
+    }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function parseEqualFilter($field, $value = null): array
+    {
+        if ($value === null) {
+            return [
+                'exists' => [
+                    'field' => $field,
+                ],
+            ];
+        }
+
         return [
             'term' => [
-                $key => $value,
+                $field => $value,
+            ],
+        ];
+    }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function parseNotEqualFilter($field, $value = null): array
+    {
+        return [
+            'bool' => [
+                'must_not' => $this->parseEqualFilter($field, $value),
+            ],
+        ];
+    }
+
+    /**
+     * @param string $field
+     * @param string $operator
+     * @param mixed $value
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function parseRangeFilter($field, $operator, $value = null): array
+    {
+        $operator = match ($operator) {
+            '<' => 'lt',
+            '>' => 'gt',
+            '<=' => 'lte',
+            '>=' => 'gte',
+            default => throw new \InvalidArgumentException(\sprintf('Unsupported operator [%s].', $operator)),
+        };
+
+        return [
+            'range' => [
+                $field => [
+                    $operator => $value,
+                ],
             ],
         ];
     }

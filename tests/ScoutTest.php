@@ -195,4 +195,35 @@ final class ScoutTest extends TestCase
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', false)->get());
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', null)->get());
     }
+
+    public function testWhereWithOperator(): void
+    {
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => 1,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test',
+            'is_visible' => 0,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'nothing',
+        ]);
+        sleep(2);
+        $this->assertCount(2, SearchableModel::search('test')->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', 1)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', 0)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '=', 1)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '=', 0)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '!=', 1)->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '!=', -1)->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '>', -1)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '>', 0)->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '<', 2)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '<', 1)->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '>=', 0)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '>=', 1)->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '<=', 1)->get());
+        $this->assertCount(1, SearchableModel::search('test')->where('is_visible', '<=', 0)->get());
+    }
 }
