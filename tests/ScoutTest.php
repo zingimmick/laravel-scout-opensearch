@@ -6,6 +6,7 @@ namespace Zing\LaravelScout\OpenSearch\Tests;
 
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Scout\Builder;
+use Laravel\Scout\Scout;
 use OpenSearch\Client;
 
 /**
@@ -198,6 +199,10 @@ final class ScoutTest extends TestCase
 
     public function testWhereWithOperator(): void
     {
+        if (version_compare(Scout::VERSION, '11.0.0') > 0) {
+            $this->markTestSkipped('Support for whereIn available since 11.0.');
+        }
+
         SearchableModel::query()->create([
             'name' => 'test',
             'is_visible' => 1,
