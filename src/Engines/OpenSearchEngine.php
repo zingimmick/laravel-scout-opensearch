@@ -209,7 +209,7 @@ class OpenSearchEngine extends Engine
      * @param mixed $value
      * @param string $key
      *
-     * @return array[]
+     * @return array<string, array<string, mixed>>
      */
     protected function parseWhereFilter($value, $key): array
     {
