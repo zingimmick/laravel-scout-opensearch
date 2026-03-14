@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.5.0 - 2026-03-14
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Other Changes
+
+* Support for PHPUnit 12 by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/111
+* Support for PHP 8.5 by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/122
+* Update orchestra/testbench version constraint by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/126
+* Refactor configuration setup in OpenSearchEngineTest by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/127
+* Fix filtering null values in where() by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/129
+* Add search engine meta data to results by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/130
+* Enhance OpenSearchEngineTest with scoutMetadata check by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/131
+
+**Full Changelog**: https://github.com/zingimmick/laravel-scout-opensearch/compare/3.4.3...3.5.0
+
 ## 3.4.3 - 2025-02-24
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
