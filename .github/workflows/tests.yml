@@ -52,7 +52,7 @@ jobs:
         run: composer require nesbot/carbon:'^2.62.1 || ^3.4' --no-update --dev
 
       - name: Install dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.stability }}
 
