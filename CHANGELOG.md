@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 3.5.1 - 2026-03-18
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.x -->
+### What's Changed
+
+#### Other Changes
+
+* Bump ramsey/composer-install from 3 to 4 by @dependabot[bot] in https://github.com/zingimmick/laravel-scout-opensearch/pull/132
+* Bump shivammathur/setup-php from 2.36.0 to 2.37.0 by @dependabot[bot] in https://github.com/zingimmick/laravel-scout-opensearch/pull/133
+* Allow Laravel 13 in tests by @zingimmick in https://github.com/zingimmick/laravel-scout-opensearch/pull/134
+
+**Full Changelog**: https://github.com/zingimmick/laravel-scout-opensearch/compare/3.5.0...3.5.1
+
 ## 3.5.0 - 2026-03-14
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
