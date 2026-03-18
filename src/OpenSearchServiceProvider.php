@@ -16,7 +16,7 @@ class OpenSearchServiceProvider extends ServiceProvider
     {
         resolve(EngineManager::class)->extend(
             'opensearch',
-            static fn (): OpenSearchEngine => new OpenSearchEngine(resolve(Client::class), config(
+            fn (): OpenSearchEngine => new OpenSearchEngine(resolve(Client::class), config(
                 'scout.soft_delete',
                 false
             ))
