@@ -5,7 +5,7 @@ use OpenSearch\ClientBuilder;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $retries = 0;
-$maxRetries = 10;
+$maxRetries = 20;
 
 while (true) {
     try {
