@@ -14,6 +14,7 @@ while (true) {
         echo 'Is up and running' . PHP_EOL;
         exit(0);
     } catch (Throwable $e) {
+        echo $e->getMessage();
         if ($retries === $maxRetries) {
             echo 'Cannot reach search server' . PHP_EOL;
             exit(1);
