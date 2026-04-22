@@ -5,7 +5,7 @@ use OpenSearch\ClientBuilder;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $retries = 0;
-$maxRetries = 20;
+$maxRetries = 10;
 
 while (true) {
     try {
@@ -14,7 +14,7 @@ while (true) {
         echo 'Is up and running' . PHP_EOL;
         exit(0);
     } catch (Throwable $e) {
-        echo $e->getMessage();
+        throw $e;
         if ($retries === $maxRetries) {
             echo 'Cannot reach search server' . PHP_EOL;
             exit(1);
