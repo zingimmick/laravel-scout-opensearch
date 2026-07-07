@@ -5,10 +5,5 @@ services:
           discovery.type: single-node
           plugins.security.disabled: 'true'
           OPENSEARCH_INITIAL_ADMIN_PASSWORD: 'pWGxl2AqRNW0wwQlzqz7'
-        volumes:
-          - opensearch-data:/usr/share/opensearch/data
         ports:
           - '9200:9200'
-volumes:
-    opensearch-data:
-        driver: local
