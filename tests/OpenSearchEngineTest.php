@@ -402,9 +402,10 @@ final class OpenSearchEngineTest extends TestCase
         ], $model);
 
         $this->assertCount(1, $results);
+        $metadata = $results->first()->scoutMetadata();
         $this->assertSame([
             '_id' => 1,
-        ], $results->first()->scoutMetadata());
+        ], $metadata);
     }
 
     public function testMapMethodRespectsOrder(): void
@@ -503,9 +504,10 @@ final class OpenSearchEngineTest extends TestCase
         ], $model);
 
         $this->assertCount(1, $results);
+        $metadata = $results->first()->scoutMetadata();
         $this->assertSame([
             '_id' => 1,
-        ], $results->first()->scoutMetadata());
+        ], $metadata);
     }
 
     public function testLazyMapMethodRespectsOrder(): void
