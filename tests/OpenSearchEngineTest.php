@@ -402,7 +402,8 @@ final class OpenSearchEngineTest extends TestCase
         ], $model);
 
         $this->assertCount(1, $results);
-        $metadata = $results->first()->scoutMetadata();
+        $metadata = $results->first()
+            ->scoutMetadata();
         $this->assertSame([
             '_id' => 1,
         ], $metadata);
@@ -504,7 +505,8 @@ final class OpenSearchEngineTest extends TestCase
         ], $model);
 
         $this->assertCount(1, $results);
-        $metadata = $results->first()->scoutMetadata();
+        $metadata = $results->first()
+            ->scoutMetadata();
         $this->assertSame([
             '_id' => 1,
         ], $metadata);
