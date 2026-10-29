@@ -20,3 +20,4 @@ parameters:
         - '#Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection<int, covariant Illuminate\\Database\\Eloquent\\Model>>::getScoutKey\(\).#'
         - '#Cannot call method scoutMetadata\(\) on Illuminate\\Database\\Eloquent\\Model\|null.#'
         - '#Strict comparison using === between 1 and -1 will always evaluate to false.#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder<Zing\\LaravelScout\\OpenSearch\\Tests\\SearchableModel>\|Illuminate\\Database\\Query\\Builder\|Zing\\LaravelScout\\OpenSearch\\Tests\SearchableModel::create\(\)#'
