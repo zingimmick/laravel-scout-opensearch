@@ -14,8 +14,6 @@ return static function (\Rector\Config\RectorConfig $rectorConfig): void {
     $rectorConfig->phpstanConfig(__DIR__ . '/phpstan.neon');
     $rectorConfig->bootstrapFiles([__DIR__ . '/vendor/larastan/larastan/bootstrap.php']);
     $rectorConfig->skip([
-        RenameVariableToMatchMethodCallReturnTypeRector::class,
-        RenameParamToMatchTypeRector::class,
         PrivatizeLocalGetterToPropertyRector::class,
     ]);
     $rectorConfig->paths([__DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/ecs.php', __DIR__ . '/rector.php']);
