@@ -461,9 +461,7 @@ class OpenSearchEngine extends Engine
      * @param string $name
      * @param array<string, mixed> $options
      *
-     * @return array{acknowledged: bool, shards_acknowledged: bool, index: string}
-     *
-     * @phpstan-return array<string, mixed>
+     * @return array<string, mixed>
      */
     public function createIndex($name, array $options = []): array
     {
@@ -479,9 +477,7 @@ class OpenSearchEngine extends Engine
      *
      * @param string $name
      *
-     * @return array{acknowledged: bool}
-     *
-     * @phpstan-return array<string, mixed>
+     * @return array<string, mixed>
      */
     public function deleteIndex($name): array
     {
