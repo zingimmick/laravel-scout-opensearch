@@ -41,6 +41,8 @@ class OpenSearchEngine extends Engine
 
         /** @var \Illuminate\Database\Eloquent\Model $model First model for search index */
         $model = $models->first();
+        $index = $model->indexableAs();
+
         if ($this->usesSoftDelete($model) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
         }
@@ -64,7 +66,7 @@ class OpenSearchEngine extends Engine
             foreach ($objects as $object) {
                 $data[] = [
                     'index' => [
-                        '_index' => $model->searchableAs(),
+                        '_index' => $index,
                         '_id' => $object[$model->getScoutKeyName()],
                     ],
                 ];
@@ -72,7 +74,7 @@ class OpenSearchEngine extends Engine
             }
 
             $this->client->bulk([
-                'index' => $model->searchableAs(),
+                'index' => $index,
                 'body' => $data,
             ]);
         }
@@ -90,6 +92,7 @@ class OpenSearchEngine extends Engine
         }
 
         $model = $models->first();
+        $index = $model->indexableAs();
 
         $keys = $models instanceof RemoveableScoutCollection
             ? $models->pluck($model->getScoutKeyName())
@@ -97,13 +100,13 @@ class OpenSearchEngine extends Engine
 
         $data = $keys->map(static fn ($object): array => [
             'delete' => [
-                '_index' => $model->searchableAs(),
+                '_index' => $index,
                 '_id' => $object,
             ],
         ])->all();
 
         $this->client->bulk([
-            'index' => $model->searchableAs(),
+            'index' => $index,
             'body' => $data,
         ]);
     }
@@ -446,7 +449,7 @@ class OpenSearchEngine extends Engine
     public function flush($model): void
     {
         $this->client->deleteByQuery([
-            'index' => $model->searchableAs(),
+            'index' => $model->indexableAs(),
             'body' => [
                 'query' => [
                     'match_all' => new \stdClass(),

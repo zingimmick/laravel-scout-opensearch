@@ -62,6 +62,17 @@ class SearchableModel extends Model
 }
 ```
 
+Indexing operations use `indexableAs` (available since Laravel Scout 10.10), which defaults to `searchableAs`. Override it when writes should go to a different index than searches, for example while swapping indexes:
+
+```php
+public function indexableAs(): string
+{
+    return 'searchable_models_write_index';
+}
+```
+
+`searchableAs` is still used for search queries, while `indexableAs` is used for indexing, deleting, and flushing records.
+
 ### Legacy configuration
 
 When the configured SDK version does not provide client factories, or when the `factory` and `client` options are not set, the previous configuration is used:
