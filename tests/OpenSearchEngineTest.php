@@ -17,6 +17,7 @@ use OpenSearch\Client;
 use Zing\LaravelScout\OpenSearch\Engines\OpenSearchEngine;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\CustomKeySearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\EmptySearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\IndexableSearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableAndSoftDeletesModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SoftDeletedEmptySearchableModel;
@@ -52,6 +53,34 @@ final class OpenSearchEngineTest extends TestCase
                     [
                         'index' => [
                             '_index' => 'table',
+                            '_id' => 1,
+                        ],
+                    ],
+                    [
+                        'id' => 1,
+                        $searchableModel->getScoutKeyName() => $searchableModel->getScoutKey(),
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->update(Collection::make([$searchableModel]));
+    }
+
+    public function testUpdateUsesIndexableAs(): void
+    {
+        $client = m::mock(Client::class);
+        $searchableModel = new IndexableSearchableModel([
+            'id' => 1,
+        ]);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'write-table',
+                'body' => [
+                    [
+                        'index' => [
+                            '_index' => 'write-table',
                             '_id' => 1,
                         ],
                     ],
@@ -133,6 +162,31 @@ final class OpenSearchEngineTest extends TestCase
         $openSearchEngine = new OpenSearchEngine($client);
         $openSearchEngine->delete(Collection::make([
             new SearchableModel([
+                'id' => 1,
+            ]),
+        ]));
+    }
+
+    public function testDeleteUsesIndexableAs(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('bulk')
+            ->once()
+            ->with([
+                'index' => 'write-table',
+                'body' => [
+                    [
+                        'delete' => [
+                            '_index' => 'write-table',
+                            '_id' => 1,
+                        ],
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->delete(Collection::make([
+            new IndexableSearchableModel([
                 'id' => 1,
             ]),
         ]));
@@ -228,6 +282,33 @@ final class OpenSearchEngineTest extends TestCase
         });
 
         $job->handle();
+    }
+
+    public function testSearchUsesSearchableAs(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'read-table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->search(new Builder(new IndexableSearchableModel(), 'zonda'));
     }
 
     public function testSearchSendsCorrectParametersToAlgolia(): void
@@ -634,10 +715,29 @@ final class OpenSearchEngineTest extends TestCase
         ]));
     }
 
+    public function testFlushUsesIndexableAs(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('deleteByQuery')
+            ->once()
+            ->with([
+                'index' => 'write-table',
+                'body' => [
+                    'query' => [
+                        'match_all' => new \stdClass(),
+                    ],
+                ],
+            ])
+            ->andReturn('write-table');
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $openSearchEngine->flush(new IndexableSearchableModel());
+    }
+
     public function testFlushAModelWithACustomAlgoliaKey(): void
     {
         $model = m::mock(CustomKeySearchableModel::class);
-        $model->shouldReceive('searchableAs')
+        $model->shouldReceive('indexableAs')
             ->once()
             ->withNoArgs()
             ->andReturn('table');
