@@ -23,12 +23,20 @@ composer require zing/laravel-scout-opensearch
 return [
     // ...
     'opensearch' => [
-        'hosts' => [env('OPENSEARCH_HOST', 'localhost:9200')],
-        'basicAuthentication' => [env('OPENSEARCH_USERNAME', 'admin'), env('OPENSEARCH_PASSWORD', 'admin')],
-        'retries' => env('OPENSEARCH_RETRYS', 2),
+        'factory' => \OpenSearch\GuzzleClientFactory::class,
+        'client' => [
+            'base_uri' => env('OPENSEARCH_URL', 'http://localhost:9200'),
+            'auth' => [env('OPENSEARCH_USERNAME', 'admin'), env('OPENSEARCH_PASSWORD', 'admin')],
+            'verify' => env('OPENSEARCH_VERIFY_SSL', false),
+        ],
+        'retries' => env('OPENSEARCH_RETRIES', 2),
     ],
 ];
 ```
+
+The `factory` option is optional and defaults to `\OpenSearch\GuzzleClientFactory::class`. It may be any class that implements `\OpenSearch\ClientFactoryInterface` and is resolved through Laravel's service container, so its constructor dependencies are injected automatically. The options in `client` are passed directly to the factory's `create()` method, so they are specific to the chosen HTTP client. The optional `retries` and `logger` options are passed to the factory's `maxRetries` and `logger` constructor arguments, which are supported by the built-in Guzzle and Symfony factories.
+
+If `opensearch-project/opensearch-php` does not provide the factory API (it was introduced in 2.5), the legacy configuration is used automatically. Legacy configuration is also still supported on newer SDK versions through the deprecated `ClientBuilder`; migrating to the factory configuration above removes the upstream deprecation notices.
 
 Set app name and table name for model
 
@@ -54,7 +62,9 @@ class SearchableModel extends Model
 }
 ```
 
-### Configuration for Amazon OpenSearch Service
+### Legacy configuration
+
+When the configured SDK version does not provide client factories, or when the `factory` and `client` options are not set, the previous configuration is used:
 
 ```php
 return [
@@ -62,30 +72,115 @@ return [
     'opensearch' => [
         'hosts' => [env('OPENSEARCH_HOST', 'localhost:9200')],
         'basicAuthentication' => [env('OPENSEARCH_USERNAME', 'admin'), env('OPENSEARCH_PASSWORD', 'admin')],
-        'retries' => env('OPENSEARCH_RETRYS', 2),
-        'sigV4Region' => env('OPENSEARCH_REGION', 'us-east-1') ,
-        'sigV4Service' => env('OPENSEARCH_SERVICE', 'es') ,
-        'sigV4CredentialProvider' => [
-            'key' => env('OPENSEARCH_IAM_KEY'),
-            'secret' => env('OPENSEARCH_IAM_SECRET'),
+        'retries' => env('OPENSEARCH_RETRIES', 2),
+    ],
+];
+```
+
+On `opensearch-project/opensearch-php` 2.4 and later this path uses the deprecated `ClientBuilder` and emits deprecation notices, so prefer the factory configuration. The factory API used here is available since 2.5.
+
+### Using the Symfony HTTP client
+
+Install `symfony/http-client` and select `\OpenSearch\SymfonyClientFactory`:
+
+```php
+return [
+    // ...
+    'opensearch' => [
+        'factory' => \OpenSearch\SymfonyClientFactory::class,
+        'client' => [
+            'base_uri' => env('OPENSEARCH_URL', 'http://localhost:9200'),
+            'auth_basic' => [env('OPENSEARCH_USERNAME', 'admin'), env('OPENSEARCH_PASSWORD', 'admin')],
+            'verify_peer' => env('OPENSEARCH_VERIFY_SSL', false),
         ],
+        'retries' => env('OPENSEARCH_RETRIES', 2),
+    ],
+];
+```
+
+### Configuration for Amazon OpenSearch Service
+
+Install `aws/aws-sdk-php` and use the AWS authentication options supported by the factory:
+
+```php
+return [
+    // ...
+    'opensearch' => [
+        'factory' => \OpenSearch\GuzzleClientFactory::class,
+        'client' => [
+            'base_uri' => env('OPENSEARCH_URL', 'http://localhost:9200'),
+            'auth_aws' => [
+                'region' => env('OPENSEARCH_REGION', 'us-east-1'),
+                'service' => env('OPENSEARCH_SERVICE', 'es'),
+                'credentials' => [
+                    'access_key' => env('OPENSEARCH_IAM_KEY'),
+                    'secret_key' => env('OPENSEARCH_IAM_SECRET'),
+                    'session_token' => env('OPENSEARCH_IAM_SESSION_TOKEN'),
+                ],
+            ],
+        ],
+        'retries' => env('OPENSEARCH_RETRIES', 2),
     ],
 ];
 ```
 
 ### Debug and logging
 
+The built-in factories accept a PSR-3 logger through their constructors. Set the top-level `logger` option to a `\Psr\Log\LoggerInterface` instance:
+
 ```php
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+
 return [
     // ...
     'opensearch' => [
-        'hosts' => [env('OPENSEARCH_HOST', 'localhost:9200')],
-        'basicAuthentication' => [env('OPENSEARCH_USERNAME', 'admin'), env('OPENSEARCH_PASSWORD', 'admin')],
-        'retries' => env('OPENSEARCH_RETRYS', 2),
-        'logger' => (new \Monolog\Logger('opensearch'))->pushHandler(new \Monolog\Handler\RotatingFileHandler('opensearch.log')),
-        'tracer' => (new \Monolog\Logger('opensearch'))->pushHandler(new \Monolog\Handler\RotatingFileHandler('opensearch.log')),
+        'factory' => \OpenSearch\GuzzleClientFactory::class,
+        'client' => [
+            'base_uri' => env('OPENSEARCH_URL', 'http://localhost:9200'),
+        ],
+        'retries' => env('OPENSEARCH_RETRIES', 2),
+        'logger' => (new Logger('opensearch'))->pushHandler(
+            new RotatingFileHandler('opensearch.log')
+        ),
     ],
 ];
+```
+
+### Custom factory
+
+A custom factory only needs to implement `\OpenSearch\ClientFactoryInterface`. Its constructor parameters are resolved by Laravel, and the top-level `retries` and `logger` options are injected into constructor parameters named `maxRetries` and `logger`:
+
+```php
+use OpenSearch\Client;
+use OpenSearch\ClientFactoryInterface;
+use Psr\Log\LoggerInterface;
+
+final class MyOpenSearchClientFactory implements ClientFactoryInterface
+{
+    public function __construct(
+        protected int $maxRetries = 0,
+        protected ?LoggerInterface $logger = null,
+    ) {
+    }
+
+    public function create(array $options): Client
+    {
+        return (new \OpenSearch\GuzzleClientFactory($this->maxRetries, $this->logger))->create($options);
+    }
+}
+```
+
+Then select it in the configuration:
+
+```php
+'opensearch' => [
+    'factory' => \App\Search\MyOpenSearchClientFactory::class,
+    'client' => [
+        'base_uri' => env('OPENSEARCH_URL', 'http://localhost:9200'),
+    ],
+    'retries' => env('OPENSEARCH_RETRIES', 2),
+],
 ```
 
 ## License
