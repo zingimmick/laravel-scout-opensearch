@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\ScoutServiceProvider;
 use OpenSearch\ClientBuilder;
+use OpenSearch\GuzzleClientFactory;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Zing\LaravelScout\OpenSearch\OpenSearchServiceProvider;
 
@@ -52,7 +53,14 @@ abstract class TestCase extends BaseTestCase
             ]
         );
         Config::set('scout.driver', 'opensearch');
-        Config::set('scout.opensearch', [
+        Config::set('scout.opensearch', class_exists(GuzzleClientFactory::class) ? [
+            'factory' => GuzzleClientFactory::class,
+            'client' => [
+                'base_uri' => 'http://localhost:9200',
+                'auth' => ['admin', 'admin'],
+                'verify' => false,
+            ],
+        ] : [
             'hosts' => ['localhost:9200'],
             'retries' => 2,
             'handler' => ClientBuilder::multiHandler(),

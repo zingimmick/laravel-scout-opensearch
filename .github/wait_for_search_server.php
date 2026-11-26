@@ -1,6 +1,7 @@
 <?php
 
 use OpenSearch\ClientBuilder;
+use OpenSearch\GuzzleClientFactory;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -9,7 +10,11 @@ $maxRetries = 10;
 
 while (true) {
     try {
-        $client = ClientBuilder::create()->build();
+        $client = class_exists(GuzzleClientFactory::class)
+            ? (new GuzzleClientFactory())->create([
+                'base_uri' => 'http://localhost:9200',
+            ])
+            : ClientBuilder::create()->build();
         $client->ping();
         echo 'Is up and running' . PHP_EOL;
         exit(0);
