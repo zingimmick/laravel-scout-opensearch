@@ -6,6 +6,132 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- changelog-linker -->
+## 4.0.0 - 2026-11-27
+
+### Highlights
+
+- OpenSearch clients are created through configurable `ClientFactoryInterface` implementations.
+- Write operations can target a different index from read operations through `indexableAs()`.
+- Scout index settings and mappings are supported through `UpdatesIndexSettings`.
+- `deleteAllIndexes()` and `scout:delete-all-indexes` are supported.
+- `BackedEnum` values are supported in `where()`, `whereIn()`, and `whereNotIn()`.
+- Empty search strings return all records instead of no records.
+- `take(0)` and zero-sized pagination now preserve `size: 0` and `from: 0`.
+- `createIndex()` is idempotent when the index already exists.
+
+### Compatibility
+
+| Dependency | 3.5.1 | 4.x |
+| --- | --- | --- |
+| PHP | `^8.0` | `^8.2` |
+| `laravel/scout` | `^8.5 \|\| ^9.1 \|\| ^10.0 \|\| ^11.0` | `^10.12 \|\| ^11.0` |
+| `opensearch-project/opensearch-php` | `^2.0` | `^2.0` (`^2.5` required for the client factory API) |
+
+PHP 8.6 is covered by the test matrix.
+
+### Breaking changes
+
+#### Requirements
+
+- Minimum PHP version is now 8.2.
+- Minimum Laravel Scout version is now 10.12.
+
+#### Client configuration
+
+- The default configuration format is now `factory` + `client`.
+- The legacy `hosts` / `basicAuthentication` format remains supported only when neither `factory` nor `client` is set.
+- The legacy path uses the deprecated `ClientBuilder` on `opensearch-project/opensearch-php` 2.4+ and emits deprecation notices.
+- Factory support requires `opensearch-project/opensearch-php` 2.5+.
+- On the factory path, `retries` defaults to `0` when omitted.
+
+#### Write index
+
+- `update()`, `delete()`, and `flush()` now use `indexableAs()`.
+- `search()` and `paginate()` continue to use `searchableAs()`.
+- The default `indexableAs()` returns `searchableAs()`, so behavior is unchanged unless a model overrides it.
+
+#### Search behavior
+
+- A blank search query now uses `match_all` and returns all records. Previously an empty `query_string` was sent.
+- `take(0)` now sends `size: 0` and returns no records.
+- Zero-sized pagination now sends `size: 0` and `from: 0`.
+- Empty sort clauses are no longer sent.
+
+#### Index management
+
+- `createIndex()` no longer throws when the index already exists.
+- `createIndex()` returns an empty array for an existing index and re-throws unrelated errors.
+
+### New features
+
+#### OpenSearch client factories
+
+Clients are resolved through `OpenSearch\ClientFactoryInterface`. The built-in `GuzzleClientFactory` is used by default, and `SymfonyClientFactory` is supported when `symfony/http-client` is installed.
+
+Custom factories are resolved through the Laravel container. Constructor parameters named `maxRetries` and `logger` receive the top-level `retries` and `logger` options.
+
+#### Separate read and write indexes
+
+Models may override `indexableAs()` to send indexing, deleting, and flushing operations to a different index than searches.
+
+#### Scout index settings
+
+`OpenSearchEngine` implements `Laravel\Scout\Contracts\UpdatesIndexSettings`:
+
+- Settings are written with `indices()->putSettings()`.
+- Mappings are written with `indices()->putMapping()`.
+- `scout:sync-index-settings` synchronizes the configured settings.
+- `scout:index` applies matching settings after creating an index.
+- An integer `__soft_deleted` mapping is added automatically for soft-deletable models when `scout.soft_delete` is enabled.
+
+#### Delete all indexes
+
+`deleteAllIndexes()` lists indexes through `_cat/indices` and deletes indexes that start with `scout.prefix`. The Scout command is available:
+
+```bash
+php artisan scout:delete-all-indexes
+
+```
+> This deletes every index under the current Scout prefix, not a single model's index.
+
+#### BackedEnum filters
+
+`where()`, `whereIn()`, and `whereNotIn()` convert `BackedEnum` values to their underlying values.
+
+#### AWS / Symfony clients
+
+- AWS SigV4 authentication is configured through `client.auth_aws`.
+- The Symfony HTTP client is supported through `OpenSearch\SymfonyClientFactory`.
+
+### Fixes and improvements
+
+- Empty searches no longer return zero results solely because the query string is blank.
+- `size: 0` and `from: 0` are no longer discarded while building search options.
+- Existing indexes no longer cause `scout:index` to fail.
+- Added PHP 8.6 compatibility testing.
+- Added a local Docker OpenSearch test environment.
+- Updated test and static analysis tooling.
+
+### Changes by commit
+
+| Commit | Change | Type |
+| --- | --- | --- |
+| `2c57625` | Minimum PHP version raised to 8.2 | Breaking |
+| `1c8c302` | Added PHP 8.6 support | Compatibility |
+| `b7d45b0` | Added OpenSearch client factory support | Feature / breaking configuration change |
+| `41886e7` | Writes use `indexableAs()` | Feature / behavior change |
+| `54aa02e` | Added `deleteAllIndexes()` | Feature |
+| `29558ca` | Made `createIndex()` idempotent | Behavior change |
+| `a4c6ba0` | Added BackedEnum filter support | Feature |
+| `9155d20` | Empty queries use `match_all` | Behavior change |
+| `40c560e` | Preserved `size: 0` / `from: 0` | Fix / behavior change |
+| `b35a697` | Added Scout index settings support | Feature |
+| `bb29700` | Added where value type coverage | Tests only |
+
+### Upgrading
+
+See [UPGRADING.md](../UPGRADING.md) for the required upgrade steps, configuration examples, and behavior changes.
+
 ## 3.5.1 - 2026-03-18
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.x -->
