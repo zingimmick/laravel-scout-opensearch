@@ -21,6 +21,7 @@ use Zing\LaravelScout\OpenSearch\Tests\Fixtures\IndexableSearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableAndSoftDeletesModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SearchableModel;
 use Zing\LaravelScout\OpenSearch\Tests\Fixtures\SoftDeletedEmptySearchableModel;
+use Zing\LaravelScout\OpenSearch\Tests\Fixtures\Status;
 
 /**
  * @internal
@@ -309,6 +310,118 @@ final class OpenSearchEngineTest extends TestCase
 
         $openSearchEngine = new OpenSearchEngine($client);
         $openSearchEngine->search(new Builder(new IndexableSearchableModel(), 'zonda'));
+    }
+
+    public function testSearchSupportsBackedEnumWhereFilter(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'status' => 'active',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('status', Status::Active);
+
+        $openSearchEngine->search($builder);
+    }
+
+    public function testSearchSupportsBackedEnumWhereInFilter(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'terms' => [
+                                        'status' => [
+                                            'active',
+                                            'inactive',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->whereIn('status', [Status::Active, Status::Inactive]);
+
+        $openSearchEngine->search($builder);
+    }
+
+    public function testSearchSupportsBackedEnumWhereNotInFilter(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [
+                                [
+                                    'terms' => [
+                                        'status' => [
+                                            'active',
+                                            'inactive',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $openSearchEngine = new OpenSearchEngine($client);
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->whereNotIn('status', [Status::Active, Status::Inactive]);
+
+        $openSearchEngine->search($builder);
     }
 
     public function testSearchSendsCorrectParametersToAlgolia(): void

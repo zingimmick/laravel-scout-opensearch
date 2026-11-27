@@ -191,18 +191,18 @@ class OpenSearchEngine extends Engine
             ->values())->values();
 
         if (property_exists($builder, 'whereIns')) {
-            $must = $must->merge(collect($builder->whereIns)->map(static fn ($values, $key): array => [
+            $must = $must->merge(collect($builder->whereIns)->map(fn ($values, $key): array => [
                 'terms' => [
-                    $key => $values,
+                    $key => $this->normalizeValue($values),
                 ],
             ])->values())->values();
         }
 
         $mustNot = collect();
         if (property_exists($builder, 'whereNotIns')) {
-            $mustNot = $mustNot->merge(collect($builder->whereNotIns)->map(static fn ($values, $key): array => [
+            $mustNot = $mustNot->merge(collect($builder->whereNotIns)->map(fn ($values, $key): array => [
                 'terms' => [
-                    $key => $values,
+                    $key => $this->normalizeValue($values),
                 ],
             ])->values())->values();
         }
@@ -244,6 +244,8 @@ class OpenSearchEngine extends Engine
             $operator = $value['operator'];
             $value = $value['value'];
         }
+
+        $value = $this->normalizeValue($value);
 
         if ($value === null) {
             return [
@@ -327,6 +329,22 @@ class OpenSearchEngine extends Engine
                 ],
             ],
         ];
+    }
+
+    /**
+     * Normalize a value for an OpenSearch query.
+     */
+    protected function normalizeValue(mixed $value): mixed
+    {
+        if ($value instanceof \BackedEnum) {
+            return $value->value;
+        }
+
+        if (\is_array($value)) {
+            return array_map($this->normalizeValue(...), $value);
+        }
+
+        return $value;
     }
 
     /**
