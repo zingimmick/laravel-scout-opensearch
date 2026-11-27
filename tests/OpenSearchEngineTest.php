@@ -715,6 +715,55 @@ final class OpenSearchEngineTest extends TestCase
         ]));
     }
 
+    public function testCreateIndexCreatesIndex(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices->create')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'settings' => [],
+                ],
+            ])
+            ->andReturn([
+                'acknowledged' => true,
+                'shards_acknowledged' => true,
+                'index' => 'table',
+            ]);
+
+        $this->assertSame([
+            'acknowledged' => true,
+            'shards_acknowledged' => true,
+            'index' => 'table',
+        ], (new OpenSearchEngine($client))->createIndex('table', [
+            'settings' => [],
+        ]));
+    }
+
+    public function testCreateIndexIsIdempotentWhenIndexAlreadyExists(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices->create')
+            ->once()
+            ->andThrow(new \Exception('resource_already_exists_exception: [table] already exists'));
+
+        $this->assertSame([], (new OpenSearchEngine($client))->createIndex('table'));
+    }
+
+    public function testCreateIndexRethrowsOtherExceptions(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices->create')
+            ->once()
+            ->andThrow(new \Exception('mapper_parsing_exception: failed to parse'));
+
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('mapper_parsing_exception: failed to parse');
+
+        (new OpenSearchEngine($client))->createIndex('table');
+    }
+
     public function testDeleteAllIndexesDeletesOnlyIndexesWithScoutPrefix(): void
     {
         Config::shouldReceive('get')
