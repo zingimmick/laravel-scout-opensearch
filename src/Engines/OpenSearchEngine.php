@@ -118,11 +118,7 @@ class OpenSearchEngine extends Engine
      */
     public function search(Builder $builder): mixed
     {
-        return $this->performSearch($builder, array_filter([
-            'query' => $this->buildQuery($builder),
-            'sort' => $this->buildSort($builder),
-            'size' => $builder->limit,
-        ]));
+        return $this->performSearch($builder, $this->buildSearchOptions($builder, $builder->limit));
     }
 
     /**
@@ -134,12 +130,41 @@ class OpenSearchEngine extends Engine
      */
     public function paginate(Builder $builder, $perPage, $page): mixed
     {
-        return $this->performSearch($builder, array_filter([
+        return $this->performSearch($builder, $this->buildSearchOptions(
+            $builder,
+            $perPage,
+            $perPage * ($page - 1)
+        ));
+    }
+
+    /**
+     * Build the options for a search request.
+     *
+     * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildSearchOptions(Builder $builder, ?int $size = null, ?int $from = null): array
+    {
+        $options = [
             'query' => $this->buildQuery($builder),
-            'sort' => $this->buildSort($builder),
-            'size' => $perPage,
-            'from' => $perPage * ($page - 1),
-        ]));
+        ];
+
+        $sort = $this->buildSort($builder);
+
+        if ($sort !== []) {
+            $options['sort'] = $sort;
+        }
+
+        if ($size !== null) {
+            $options['size'] = $size;
+        }
+
+        if ($from !== null) {
+            $options['from'] = $from;
+        }
+
+        return $options;
     }
 
     /**

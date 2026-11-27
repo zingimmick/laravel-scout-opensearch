@@ -97,6 +97,7 @@ final class ScoutTest extends TestCase
 
         $this->assertCount(3, SearchableModel::search('')->get());
         $this->assertCount(2, SearchableModel::search('')->where('is_visible', 1)->get());
+        $this->assertCount(0, SearchableModel::search('test')->take(0)->get());
         if (method_exists(Builder::class, 'whereIn')) {
             $this->assertCount(0, SearchableModel::search('')->whereIn('is_visible', [])->get());
         }
