@@ -331,6 +331,92 @@ final class OpenSearchEngineTest extends TestCase
         (new OpenSearchEngine($client))->search($builder);
     }
 
+    public function testSearchPreservesZeroLimit(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                    'size' => 0,
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->take(0);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
+    public function testPaginatePreservesZeroPerPage(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                    'size' => 0,
+                    'from' => 0,
+                ],
+            ]);
+
+        (new OpenSearchEngine($client))->paginate(new Builder(new SearchableModel(), 'zonda'), 0, 1);
+    }
+
+    public function testPaginateIncludesSizeAndFrom(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                    'size' => 10,
+                    'from' => 20,
+                ],
+            ]);
+
+        (new OpenSearchEngine($client))->paginate(new Builder(new SearchableModel(), 'zonda'), 10, 3);
+    }
+
     public function testSearchUsesSearchableAs(): void
     {
         $client = m::mock(Client::class);
