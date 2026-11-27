@@ -6,7 +6,6 @@ namespace Zing\LaravelScout\OpenSearch\Tests;
 
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Scout\Builder;
-use Laravel\Scout\Scout;
 use OpenSearch\Client;
 
 /**
@@ -223,12 +222,15 @@ final class ScoutTest extends TestCase
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', true)->get());
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', false)->get());
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', null)->get());
+        if ($this->supportsWhereOperators()) {
+            $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '!=', null)->get());
+        }
     }
 
     public function testWhereWithOperator(): void
     {
-        if (! class_exists(Scout::class) || version_compare(Scout::VERSION, '11.0.0') === -1) {
-            $this->markTestSkipped('Support for whereIn available since 11.0.');
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
         }
 
         SearchableModel::query()->create([

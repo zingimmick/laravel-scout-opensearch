@@ -556,6 +556,236 @@ final class OpenSearchEngineTest extends TestCase
         $openSearchEngine->search($builder);
     }
 
+    public function testWhereSupportsStringValue(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'status' => 'active',
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('status', 'active');
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
+    public function testWhereSupportsBooleanValue(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'is_visible' => true,
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('is_visible', true);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
+    public function testWhereSupportsNullValue(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'bool' => [
+                                        'must_not' => [
+                                            'exists' => [
+                                                'field' => 'status',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('status', null);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
+    public function testWhereSupportsNotNullValue(): void
+    {
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
+        }
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'bool' => [
+                                        'must' => [
+                                            'exists' => [
+                                                'field' => 'status',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('status', '!=', null);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
+    public function testWhereSupportsBackedEnumNotEqualFilter(): void
+    {
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
+        }
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'bool' => [
+                                        'must_not' => [
+                                            'term' => [
+                                                'status' => 'active',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('status', '!=', Status::Active);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
+    public function testWhereSupportsBackedEnumRangeFilter(): void
+    {
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
+        }
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'query_string' => [
+                                        'query' => 'zonda',
+                                    ],
+                                ],
+                                [
+                                    'range' => [
+                                        'status' => [
+                                            'gte' => 'inactive',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), 'zonda');
+        $builder->where('status', '>=', Status::Inactive);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
     public function testSearchSendsCorrectParametersToAlgolia(): void
     {
         $client = m::mock(Client::class);
