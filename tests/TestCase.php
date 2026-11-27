@@ -7,6 +7,7 @@ namespace Zing\LaravelScout\OpenSearch\Tests;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Laravel\Scout\Scout;
 use Laravel\Scout\ScoutServiceProvider;
 use OpenSearch\ClientBuilder;
 use OpenSearch\GuzzleClientFactory;
@@ -67,6 +68,11 @@ abstract class TestCase extends BaseTestCase
             'basicAuthentication' => ['admin', 'admin'],
             'sslVerification' => false,
         ]);
+    }
+
+    protected function supportsWhereOperators(): bool
+    {
+        return version_compare(Scout::VERSION, '11.0.0', '>=');
     }
 
     protected function setUpDatabase(): void

@@ -664,6 +664,10 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testWhereSupportsNotNullValue(): void
     {
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
+        }
+
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
@@ -702,6 +706,10 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testWhereSupportsBackedEnumNotEqualFilter(): void
     {
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
+        }
+
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
@@ -740,6 +748,10 @@ final class OpenSearchEngineTest extends TestCase
 
     public function testWhereSupportsBackedEnumRangeFilter(): void
     {
+        if (! $this->supportsWhereOperators()) {
+            $this->markTestSkipped('Support for where operators available since Scout 11.0.');
+        }
+
         $client = m::mock(Client::class);
         $client->shouldReceive('search')
             ->once()
