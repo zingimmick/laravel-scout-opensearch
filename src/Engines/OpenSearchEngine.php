@@ -491,6 +491,33 @@ class OpenSearchEngine extends Engine
     }
 
     /**
+     * Delete all search indexes.
+     *
+     * @return array<string, mixed>
+     */
+    public function deleteAllIndexes(): array
+    {
+        $prefix = (string) config('scout.prefix', '');
+
+        $indexes = collect($this->client->cat()->indices([
+            'format' => 'json',
+            'h' => 'index',
+        ]))
+            ->pluck('index')
+            ->filter(static fn ($index): bool => \is_string($index) && str_starts_with($index, $prefix))
+            ->values()
+            ->all();
+
+        if ($indexes === []) {
+            return [];
+        }
+
+        return $this->client->indices()->delete([
+            'index' => implode(',', $indexes),
+        ]);
+    }
+
+    /**
      * Determine if the given model uses soft deletes.
      */
     protected function usesSoftDelete(Model $model): bool
