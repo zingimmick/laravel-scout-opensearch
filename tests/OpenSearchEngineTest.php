@@ -1009,6 +1009,114 @@ final class OpenSearchEngineTest extends TestCase
         (new OpenSearchEngine($client))->createIndex('table');
     }
 
+    public function testUpdateIndexSettingsUpdatesSettings(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices->putSettings')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'index' => [
+                        'number_of_replicas' => 1,
+                        'refresh_interval' => '1s',
+                    ],
+                ],
+            ]);
+
+        (new OpenSearchEngine($client))->updateIndexSettings('table', [
+            'number_of_replicas' => 1,
+            'settings' => [
+                'refresh_interval' => '1s',
+            ],
+        ]);
+    }
+
+    public function testUpdateIndexSettingsUpdatesMappings(): void
+    {
+        $mappings = [
+            'properties' => [
+                'name' => [
+                    'type' => 'keyword',
+                ],
+            ],
+        ];
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices->putMapping')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => $mappings,
+            ]);
+
+        (new OpenSearchEngine($client))->updateIndexSettings('table', [
+            'mappings' => $mappings,
+        ]);
+    }
+
+    public function testUpdateIndexSettingsUpdatesSettingsAndMappings(): void
+    {
+        $mappings = [
+            'properties' => [
+                'name' => [
+                    'type' => 'keyword',
+                ],
+            ],
+        ];
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('indices->putSettings')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'index' => [
+                        'number_of_replicas' => 1,
+                    ],
+                ],
+            ]);
+        $client->shouldReceive('indices->putMapping')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => $mappings,
+            ]);
+
+        (new OpenSearchEngine($client))->updateIndexSettings('table', [
+            'number_of_replicas' => 1,
+            'mappings' => $mappings,
+        ]);
+    }
+
+    public function testConfigureSoftDeleteFilterAddsMapping(): void
+    {
+        $this->assertSame([
+            'mappings' => [
+                'properties' => [
+                    '__soft_deleted' => [
+                        'type' => 'integer',
+                    ],
+                ],
+            ],
+        ], (new OpenSearchEngine(m::mock(Client::class)))->configureSoftDeleteFilter());
+    }
+
+    public function testConfigureSoftDeleteFilterPreservesExistingMapping(): void
+    {
+        $settings = [
+            'mappings' => [
+                'properties' => [
+                    '__soft_deleted' => [
+                        'type' => 'byte',
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertSame($settings, (new OpenSearchEngine(m::mock(Client::class)))->configureSoftDeleteFilter($settings));
+    }
+
     public function testDeleteAllIndexesDeletesOnlyIndexesWithScoutPrefix(): void
     {
         Config::shouldReceive('get')

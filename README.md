@@ -194,6 +194,47 @@ Then select it in the configuration:
 ],
 ```
 
+### Index settings
+
+The engine implements Scout's `\Laravel\Scout\Contracts\UpdatesIndexSettings` contract. Configure settings per index under `scout.opensearch.index-settings`:
+
+```php
+return [
+    // ...
+    'opensearch' => [
+        'factory' => \OpenSearch\GuzzleClientFactory::class,
+        'client' => [
+            'base_uri' => env('OPENSEARCH_URL', 'http://localhost:9200'),
+        ],
+        'index-settings' => [
+            'searchable_models' => [
+                'settings' => [
+                    'number_of_replicas' => 1,
+                    'refresh_interval' => '1s',
+                ],
+                'mappings' => [
+                    'properties' => [
+                        'name' => [
+                            'type' => 'text',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+];
+```
+
+`settings` are sent with `indices()->putSettings()` and `mappings` with `indices()->putMapping()`. Flat keys outside `settings` and `mappings` are also treated as index settings.
+
+Sync the configured settings with:
+
+```bash
+php artisan scout:sync-index-settings
+```
+
+When Scout soft deletes are enabled, the engine automatically adds an integer mapping for `__soft_deleted`.
+
 ## License
 
 Laravel Scout OpenSearch is an open-sourced software licensed under the [MIT license](LICENSE).

@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
+use Laravel\Scout\Contracts\UpdatesIndexSettings;
 use Laravel\Scout\Engines\Engine;
 use Laravel\Scout\Jobs\RemoveableScoutCollection;
 use OpenSearch\Client;
@@ -17,7 +18,7 @@ use OpenSearch\Client;
 /**
  * @mixin \OpenSearch\Client
  */
-class OpenSearchEngine extends Engine
+class OpenSearchEngine extends Engine implements UpdatesIndexSettings
 {
     /**
      * Create a new engine instance.
@@ -542,6 +543,51 @@ class OpenSearchEngine extends Engine
     {
         return str_contains($throwable->getMessage(), 'resource_already_exists_exception')
             || str_contains($throwable->getMessage(), 'index_already_exists_exception');
+    }
+
+    /**
+     * Update the index settings for the given index.
+     *
+     * @param array<string, mixed> $settings
+     */
+    public function updateIndexSettings(string $name, array $settings = []): void
+    {
+        $indexSettings = array_merge(
+            Arr::except($settings, ['settings', 'mappings']),
+            (array) ($settings['settings'] ?? [])
+        );
+
+        if ($indexSettings !== []) {
+            $this->client->indices()->putSettings([
+                'index' => $name,
+                'body' => [
+                    'index' => $indexSettings,
+                ],
+            ]);
+        }
+
+        if (isset($settings['mappings']) && $settings['mappings'] !== []) {
+            $this->client->indices()->putMapping([
+                'index' => $name,
+                'body' => $settings['mappings'],
+            ]);
+        }
+    }
+
+    /**
+     * Configure the soft delete filter within the given settings.
+     *
+     * @param array<string, mixed> $settings
+     *
+     * @return array<string, mixed>
+     */
+    public function configureSoftDeleteFilter(array $settings = []): array
+    {
+        $settings['mappings']['properties']['__soft_deleted'] ??= [
+            'type' => 'integer',
+        ];
+
+        return $settings;
     }
 
     /**
