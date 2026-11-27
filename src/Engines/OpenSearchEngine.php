@@ -468,11 +468,28 @@ class OpenSearchEngine extends Engine
      */
     public function createIndex($name, array $options = []): array
     {
-        return $this->client->indices()
-            ->create([
-                'index' => $name,
-                'body' => $options,
-            ]);
+        try {
+            return $this->client->indices()
+                ->create([
+                    'index' => $name,
+                    'body' => $options,
+                ]);
+        } catch (\Throwable $throwable) {
+            if (! $this->isIndexAlreadyExistsException($throwable)) {
+                throw $throwable;
+            }
+
+            return [];
+        }
+    }
+
+    /**
+     * Determine if the given exception means the index already exists.
+     */
+    protected function isIndexAlreadyExistsException(\Throwable $throwable): bool
+    {
+        return str_contains($throwable->getMessage(), 'resource_already_exists_exception')
+            || str_contains($throwable->getMessage(), 'index_already_exists_exception');
     }
 
     /**
