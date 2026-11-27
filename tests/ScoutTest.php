@@ -223,6 +223,7 @@ final class ScoutTest extends TestCase
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', true)->get());
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', false)->get());
         $this->assertCount(1, SearchableModel::search('test')->where('is_visible', null)->get());
+        $this->assertCount(2, SearchableModel::search('test')->where('is_visible', '!=', null)->get());
     }
 
     public function testWhereWithOperator(): void
