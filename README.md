@@ -11,6 +11,8 @@
 
 > **Requires [PHP 8.2+](https://php.net/releases/)**
 
+> See [UPGRADING.md](UPGRADING.md) for upgrade instructions.
+
 Require Laravel Scout OpenSearch using [Composer](https://getcomposer.org):
 
 ```bash
