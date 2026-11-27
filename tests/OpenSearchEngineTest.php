@@ -715,6 +715,67 @@ final class OpenSearchEngineTest extends TestCase
         ]));
     }
 
+    public function testDeleteAllIndexesDeletesOnlyIndexesWithScoutPrefix(): void
+    {
+        Config::shouldReceive('get')
+            ->with('scout.prefix', m::any())
+            ->andReturn('scout_');
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('cat->indices')
+            ->once()
+            ->with([
+                'format' => 'json',
+                'h' => 'index',
+            ])
+            ->andReturn([
+                [
+                    'index' => 'scout_users',
+                ],
+                [
+                    'index' => 'other_index',
+                ],
+                [
+                    'index' => 'scout_posts',
+                ],
+            ]);
+        $client->shouldReceive('indices->delete')
+            ->once()
+            ->with([
+                'index' => 'scout_users,scout_posts',
+            ])
+            ->andReturn([
+                'acknowledged' => true,
+            ]);
+
+        $this->assertSame([
+            'acknowledged' => true,
+        ], (new OpenSearchEngine($client))->deleteAllIndexes());
+    }
+
+    public function testDeleteAllIndexesDoesNothingWhenNoIndexesMatch(): void
+    {
+        Config::shouldReceive('get')
+            ->with('scout.prefix', m::any())
+            ->andReturn('scout_');
+
+        $client = m::mock(Client::class);
+        $client->shouldReceive('cat->indices')
+            ->once()
+            ->with([
+                'format' => 'json',
+                'h' => 'index',
+            ])
+            ->andReturn([
+                [
+                    'index' => 'other_index',
+                ],
+            ]);
+        $client->shouldNotReceive('indices->delete');
+
+        $this->assertSame([], (new OpenSearchEngine($client))->deleteAllIndexes());
+    }
+
     public function testFlushUsesIndexableAs(): void
     {
         $client = m::mock(Client::class);
