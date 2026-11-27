@@ -285,6 +285,52 @@ final class OpenSearchEngineTest extends TestCase
         $job->handle();
     }
 
+    public function testSearchWithEmptyQueryUsesMatchAll(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'match_all' => new \stdClass(),
+                    ],
+                ],
+            ]);
+
+        (new OpenSearchEngine($client))->search(new Builder(new SearchableModel(), ''));
+    }
+
+    public function testSearchWithEmptyQueryAndWhereFilterKeepsFilters(): void
+    {
+        $client = m::mock(Client::class);
+        $client->shouldReceive('search')
+            ->once()
+            ->with([
+                'index' => 'table',
+                'body' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'is_visible' => 1,
+                                    ],
+                                ],
+                            ],
+                            'must_not' => [],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $builder = new Builder(new SearchableModel(), '');
+        $builder->where('is_visible', 1);
+
+        (new OpenSearchEngine($client))->search($builder);
+    }
+
     public function testSearchUsesSearchableAs(): void
     {
         $client = m::mock(Client::class);

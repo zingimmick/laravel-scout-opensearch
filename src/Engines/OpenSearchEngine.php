@@ -172,20 +172,23 @@ class OpenSearchEngine extends Engine
     /**
      * @param \Laravel\Scout\Builder<covariant \Illuminate\Database\Eloquent\Model> $builder
      *
-     * @return array<string, array<string, mixed[]>>
+     * @return array<string, mixed>
      */
     protected function buildQuery(Builder $builder): array
     {
         $query = $builder->query;
 
         /** @var \Illuminate\Support\Collection<int, array{query_string?: array{query: string, term?: array<string, mixed>}}> $must */
-        $must = collect([
-            [
+        $must = collect();
+
+        if (filled($query)) {
+            $must->push([
                 'query_string' => [
                     'query' => $query,
                 ],
-            ],
-        ]);
+            ]);
+        }
+
         $must = $must->merge(collect($builder->wheres)
             ->map(fn ($value, $key): array => $this->parseWhereFilter($value, $key))
             ->values())->values();
@@ -205,6 +208,12 @@ class OpenSearchEngine extends Engine
                     $key => $this->normalizeValue($values),
                 ],
             ])->values())->values();
+        }
+
+        if ($must->isEmpty() && $mustNot->isEmpty()) {
+            return [
+                'match_all' => new \stdClass(),
+            ];
         }
 
         return [

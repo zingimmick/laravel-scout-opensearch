@@ -79,6 +79,33 @@ final class ScoutTest extends TestCase
         $this->assertCount(0, SearchableModel::search('test')->keys());
     }
 
+    public function testEmptySearchAndWhereIn(): void
+    {
+        SearchableModel::query()->create([
+            'name' => 'test search 1',
+            'is_visible' => 1,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test search 2',
+            'is_visible' => 1,
+        ]);
+        SearchableModel::query()->create([
+            'name' => 'test search 3',
+            'is_visible' => 0,
+        ]);
+        sleep(2);
+
+        $this->assertCount(3, SearchableModel::search('')->get());
+        $this->assertCount(2, SearchableModel::search('')->where('is_visible', 1)->get());
+        if (method_exists(Builder::class, 'whereIn')) {
+            $this->assertCount(0, SearchableModel::search('')->whereIn('is_visible', [])->get());
+        }
+
+        if (method_exists(Builder::class, 'whereNotIn')) {
+            $this->assertCount(3, SearchableModel::search('')->whereNotIn('is_visible', [])->get());
+        }
+    }
+
     public function testOrderBy(): void
     {
         SearchableModel::query()->create([
